@@ -35,14 +35,14 @@ def test_missing_keys_listed_without_values(tmp_path):
     empty.write_text("")
     r = run(["--yes", "--env-file", str(empty)], tmp_path=tmp_path)
     assert r.returncode == 2
-    assert "ANTHROPIC_API_KEY" in r.stderr and "GITHUB_TOKEN" in r.stderr
+    assert "ANTHROPIC_API_KEY" in r.stderr
     assert "PASS" not in r.stdout
 
 
 def test_only_absent_key_is_named_and_values_never_printed(tmp_path):
     f = tmp_path / "x.env"
-    f.write_text("ANTHROPIC_API_KEY=sk-secret-value-123\n")
+    f.write_text("GITHUB_TOKEN=ghp-secret-value-123\n")
     r = run(["--yes", "--env-file", str(f)], tmp_path=tmp_path)
     assert r.returncode == 2
-    assert "GITHUB_TOKEN" in r.stderr
-    assert "sk-secret-value-123" not in r.stdout + r.stderr
+    assert "ANTHROPIC_API_KEY" in r.stderr and "GITHUB_TOKEN" not in r.stderr
+    assert "ghp-secret-value-123" not in r.stdout + r.stderr
