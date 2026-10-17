@@ -53,6 +53,7 @@ class ConnectionStatus(enum.StrEnum):
     pending = "pending"
     accepted = "accepted"
     declined = "declined"
+    removed = "removed"
 
 
 class BadgeSource(enum.StrEnum):
@@ -190,6 +191,11 @@ class User(Base):
     role: Mapped[Role] = mapped_column(_enum(Role, "role"))
     # Required at the API (register) but nullable in the DB: rows created before Part 4 have none.
     display_name: Mapped[str | None] = mapped_column(String(60))
+    # NULL = the real world; sandbox users share one uuid per visitor (see worlds.py).
+    world_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    expires_at: Mapped[datetime | None] = mapped_column(UTCDateTime())  # sandbox users only
+    handle: Mapped[str | None] = mapped_column(String(30), unique=True)
+    public_profile: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     created_at: Mapped[datetime] = _created()
 
 
@@ -261,6 +267,7 @@ class Connection(Base):
         _enum(ConnectionStatus, "connection_status"), default=ConnectionStatus.pending
     )
     created_at: Mapped[datetime] = _created()
+    responded_at: Mapped[datetime | None] = mapped_column(UTCDateTime())  # accept/decline/remove
 
 
 class SkillBadge(Base):

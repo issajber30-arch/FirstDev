@@ -1,10 +1,12 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
+import pytest
 from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from conftest import ROOT
 from sqlalchemy import CheckConstraint, inspect
+from sqlalchemy.exc import IntegrityError
 
 from firstdev.db import make_engine
 from firstdev.models import Base
@@ -41,4 +43,30 @@ def test_downgrade_to_base(tmp_path):
     cfg, engine = _upgraded(tmp_path)
     command.downgrade(cfg, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]
+    engine.dispose()
+
+
+def test_connection_status_check_accepts_removed(tmp_path):
+    # The CHECK widening is hand-written (autogenerate can't see it), so exercise it for real.
+    from sqlalchemy import text
+
+    _, engine = _upgraded(tmp_path)
+    with engine.begin() as conn:
+        for uid in ("a", "b"):
+            conn.execute(
+                text(
+                    "INSERT INTO users (id, email, password_hash, role, public_profile, created_at)"
+                    " VALUES (:i, :i || '@x.com', 'h', 'developer', 0, '2026-01-01')"
+                ),
+                {"i": uid},
+            )
+        ins = (
+            "INSERT INTO connections (id, requester_id, addressee_id, status, created_at)"
+            " VALUES ('c', 'a', 'b', :s, '2026-01-01')"
+        )
+        conn.execute(text(ins), {"s": "removed"})
+    with pytest.raises(IntegrityError), engine.begin() as conn:
+        conn.execute(
+            text(ins.replace("'c'", "'d'").replace("'a', 'b'", "'b', 'a'")), {"s": "bogus"}
+        )
     engine.dispose()

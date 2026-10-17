@@ -21,6 +21,7 @@ from firstdev.security.sanitize import (
     sanitize_text_report,
 )
 from firstdev.skills import normalize_skills
+from firstdev.worlds import same_world
 
 router = APIRouter(prefix="/postings")
 
@@ -83,8 +84,13 @@ def current_recruiter(user: User = Depends(auth.current_user)) -> User:
     return user
 
 
-def load_open_posting(db: Session, posting_id: str) -> JobPosting:
-    posting = db.get(JobPosting, posting_id)
+def load_open_posting(db: Session, posting_id: str, caller: User) -> JobPosting:
+    """An open posting from the caller's own world; 404 for anything else."""
+    posting = db.scalar(
+        same_world(
+            select(JobPosting).where(JobPosting.id == posting_id), JobPosting.recruiter_id, caller
+        )
+    )
     if posting is None or posting.status != PostingStatus.open:
         raise HTTPException(404, "not found")
     return posting
@@ -162,7 +168,11 @@ def my_postings(
 def get_posting(
     posting_id: str, user: User = Depends(auth.current_user), db: Session = Depends(get_db)
 ) -> PostingOut:
-    posting = db.get(JobPosting, posting_id)
+    posting = db.scalar(  # another world's posting is a 404, same as a missing one
+        same_world(
+            select(JobPosting).where(JobPosting.id == posting_id), JobPosting.recruiter_id, user
+        )
+    )
     owner = posting is not None and posting.recruiter_id == user.id
     if posting is None or not (owner or posting.status == PostingStatus.open):
         raise HTTPException(404, "not found")

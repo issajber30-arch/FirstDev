@@ -30,6 +30,9 @@ Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Par
   - The GitHub client only calls `https://api.github.com`, with no redirects and escaped path segments. Repo code is never cloned or run.
   - Every by-id read goes through `auth.get_owned`, which returns 404 for both missing and foreign rows.
   - Job payloads carry ids only, never user content.
+  - **Worlds:** real users have `world_id` NULL, and each demo sandbox has its own world. Any query that returns or matches *another* user's data must go through `worlds.same_world` (or `in_world`), and anything outside the caller's world is a plain 404. `tests/test_world_isolation.py` must cover every new cross-user route.
+  - **Sessions:** browsers use httpOnly cookies (`fd_access`, `fd_refresh`, `fd_csrf`), and every cookie-authenticated write needs `X-CSRF-Token`. Bearer stays for scripts and tests. `FIRSTDEV_COOKIE_PATH_PREFIX=/api` behind the Next.js proxy.
+  - **LLM budget:** every real Claude call reserves its worst-case cost in `llm_ledger` (`budget.py`) and is refused before the call once `FIRSTDEV_LLM_DAILY_USD` would be exceeded. `FIRSTDEV_LLM_MODE=fake` uses `CannedLLM` (refused in prod).
 - **Matching (Part 2, spec `docs/specs/2026-10-17-part2-design.md`).** Recall → score → explain:
   - `matching/profile.build_skill_profile` merges CV skills (`cv`, 0.6 credit) with repo evidence (`repo`, 1.0). Repo evidence comes from languages ≥ 2 KB and manifest dependencies. Repos with `tutorial_likelihood` ≥ 0.7 prove nothing.
   - `matching/vectors.top_k` does numpy cosine recall over float32 BLOBs in `embeddings`.

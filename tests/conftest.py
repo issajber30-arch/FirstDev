@@ -37,6 +37,7 @@ def db(engine):
 @pytest.fixture
 def client(engine):
     auth.login_limiter.reset()
+    auth.public_profile_limiter.reset()
     from firstdev.api import cv
 
     cv.rejected_uploads.reset()

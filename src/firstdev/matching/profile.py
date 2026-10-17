@@ -86,11 +86,10 @@ def latest_cv_parse(db: Session, profile_id: str) -> CvParse | None:
     ).first()
 
 
-def build_skill_profile(
-    db: Session, profile: DeveloperProfile, *, now: datetime | None = None
-) -> SkillProfile:
-    """Merge CV skills (cv), assessment badges (assessment) and repo evidence (repo); upsert."""
-    now = now or datetime.now(UTC)
+def compute_skills(
+    db: Session, profile: DeveloperProfile, now: datetime
+) -> tuple[list[dict], Tier]:
+    """Merge CV skills (cv), assessment badges (assessment) and repo evidence (repo). Read-only."""
     merged: dict[str, dict] = {}
     cv = latest_cv_parse(db, profile.user_id)
     cv_data = cv.data if cv else {}
@@ -139,6 +138,14 @@ def build_skill_profile(
         months = _month_total(cv_data.get("experience", []), date.today())
         # The column is NOT NULL: with no experience data we assume the platform's entry tier.
         tier = Tier.mid if months is not None and months >= _JUNIOR_BELOW_MONTHS else Tier.junior
+    return skills, tier
+
+
+def build_skill_profile(
+    db: Session, profile: DeveloperProfile, *, now: datetime | None = None
+) -> SkillProfile:
+    """Compute the skill profile and upsert it."""
+    skills, tier = compute_skills(db, profile, now or datetime.now(UTC))
     fp = profile_fingerprint(skills, str(tier))
 
     sp = db.get(SkillProfile, profile.user_id)

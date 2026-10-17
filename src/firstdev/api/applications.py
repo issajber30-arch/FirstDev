@@ -27,6 +27,7 @@ from firstdev.models import (
     MatchScore,
     User,
 )
+from firstdev.worlds import same_world
 
 router = APIRouter()
 
@@ -95,9 +96,13 @@ def _log(db: Session, app: Application, to: ApplicationStatus, actor: User) -> N
 def recruiter_application(db: Session, app_id: str, user: User) -> Application:
     """The application if it belongs to one of the recruiter's postings, else 404."""
     app = db.scalar(
-        select(Application)
-        .join(JobPosting, JobPosting.id == Application.job_posting_id)
-        .where(Application.id == app_id, JobPosting.recruiter_id == user.id)
+        same_world(  # defence in depth: the applicant must live in the recruiter's world
+            select(Application)
+            .join(JobPosting, JobPosting.id == Application.job_posting_id)
+            .where(Application.id == app_id, JobPosting.recruiter_id == user.id),
+            Application.profile_id,
+            user,
+        )
     )
     if app is None:
         raise HTTPException(404, "not found")
@@ -111,7 +116,7 @@ def apply(
     profile: DeveloperProfile = Depends(current_profile),
     db: Session = Depends(get_db),
 ) -> Queued:
-    posting = load_open_posting(db, posting_id)
+    posting = load_open_posting(db, posting_id, user)
     if not is_verified(db, profile):
         raise HTTPException(403, VERIFY_MESSAGE)
     since = datetime.now(UTC) - timedelta(hours=24)
@@ -201,14 +206,20 @@ def change_status(
 
 @router.get("/me/applications", response_model=list[MyApplicationOut])
 def my_applications(
-    profile: DeveloperProfile = Depends(current_profile), db: Session = Depends(get_db)
+    user: User = Depends(auth.current_user),
+    profile: DeveloperProfile = Depends(current_profile),
+    db: Session = Depends(get_db),
 ) -> list[MyApplicationOut]:
     rows = db.execute(
-        select(Application, JobPosting.title, MatchScore)
-        .join(JobPosting, JobPosting.id == Application.job_posting_id)
-        .outerjoin(MatchScore, MatchScore.id == Application.match_score_id)
-        .where(Application.profile_id == profile.user_id)
-        .order_by(Application.created_at.desc())
+        same_world(  # defence in depth: the posting's recruiter must share the caller's world
+            select(Application, JobPosting.title, MatchScore)
+            .join(JobPosting, JobPosting.id == Application.job_posting_id)
+            .outerjoin(MatchScore, MatchScore.id == Application.match_score_id)
+            .where(Application.profile_id == profile.user_id)
+            .order_by(Application.created_at.desc()),
+            JobPosting.recruiter_id,
+            user,
+        )
     )
     return [
         MyApplicationOut(
@@ -230,11 +241,15 @@ def posting_applications(
 ) -> list[RecruiterApplicationOut]:
     posting = auth.get_owned(db, JobPosting, posting_id, user)
     rows = db.execute(
-        select(Application, DeveloperProfile.headline, MatchScore)
-        .join(DeveloperProfile, DeveloperProfile.user_id == Application.profile_id)
-        .outerjoin(MatchScore, MatchScore.id == Application.match_score_id)
-        .where(Application.job_posting_id == posting.id)
-        .order_by(Application.created_at.desc())
+        same_world(  # applicants from another world never appear
+            select(Application, DeveloperProfile.headline, MatchScore)
+            .join(DeveloperProfile, DeveloperProfile.user_id == Application.profile_id)
+            .outerjoin(MatchScore, MatchScore.id == Application.match_score_id)
+            .where(Application.job_posting_id == posting.id)
+            .order_by(Application.created_at.desc()),
+            Application.profile_id,
+            user,
+        )
     )
     return [
         RecruiterApplicationOut(

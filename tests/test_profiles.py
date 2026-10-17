@@ -9,6 +9,7 @@ def test_new_developer_has_empty_profile(client, dev_headers):
     assert r.status_code == 200
     body = r.json()
     assert body.pop("open_to_opportunities") is False  # discovery is opt-in
+    assert body.pop("public_profile") is False  # so is the public page
     assert set(body.values()) == {None}
 
 
@@ -22,7 +23,13 @@ def test_put_get_roundtrip(client, dev_headers):
     }
     r = client.put(URL, json=body, headers=dev_headers)
     assert r.status_code == 200
-    assert r.json() == {**body, "headline": "Backend dev", "open_to_opportunities": False}
+    assert r.json() == {
+        **body,
+        "headline": "Backend dev",
+        "open_to_opportunities": False,
+        "handle": None,
+        "public_profile": False,
+    }
     assert client.get(URL, headers=dev_headers).json() == r.json()
 
 

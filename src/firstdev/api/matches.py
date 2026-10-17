@@ -32,6 +32,7 @@ from firstdev.models import (
     User,
 )
 from firstdev.pipelines.match_jobs import _repo_highlights, is_stale
+from firstdev.worlds import same_world
 
 router = APIRouter()
 
@@ -120,15 +121,19 @@ def candidates(
 ) -> list[CandidateCard]:
     posting = auth.get_owned(db, JobPosting, posting_id, user)
     rows = db.execute(
-        select(MatchScore, DeveloperProfile.headline, SkillProfile)
-        .join(DeveloperProfile, DeveloperProfile.user_id == MatchScore.profile_id)
-        .outerjoin(SkillProfile, SkillProfile.profile_id == MatchScore.profile_id)
-        .where(
-            MatchScore.posting_id == posting.id,
-            DeveloperProfile.open_to_opportunities.is_(True),  # opt-out hides the card at once
+        same_world(  # candidates from another world never get a card
+            select(MatchScore, DeveloperProfile.headline, SkillProfile)
+            .join(DeveloperProfile, DeveloperProfile.user_id == MatchScore.profile_id)
+            .outerjoin(SkillProfile, SkillProfile.profile_id == MatchScore.profile_id)
+            .where(
+                MatchScore.posting_id == posting.id,
+                DeveloperProfile.open_to_opportunities.is_(True),  # opt-out hides the card at once
+            )
+            .order_by(MatchScore.score.desc())
+            .limit(MAX_CARDS),
+            MatchScore.profile_id,
+            user,
         )
-        .order_by(MatchScore.score.desc())
-        .limit(MAX_CARDS)
     ).all()
     cards = []
     for ms, headline, sp in rows:
@@ -157,7 +162,9 @@ def candidates(
 
 @router.get("/me/recommended-jobs", response_model=RecommendedOut)
 def recommended_jobs(
-    profile: DeveloperProfile = Depends(current_profile), db: Session = Depends(get_db)
+    user: User = Depends(auth.current_user),
+    profile: DeveloperProfile = Depends(current_profile),
+    db: Session = Depends(get_db),
 ) -> RecommendedOut:
     """Inline from stored vectors: no LLM, no writes."""
     model = embeddings.get_embedder().model
@@ -173,7 +180,13 @@ def recommended_jobs(
         return RecommendedOut(jobs=[], reason="profile not verified yet")
     # shortcut: IN-list of every open posting id; fine to ~30k open postings (SQLite variable cap).
     open_ids = list(
-        db.scalars(select(JobPosting.id).where(JobPosting.status == PostingStatus.open))
+        db.scalars(
+            same_world(
+                select(JobPosting.id).where(JobPosting.status == PostingStatus.open),
+                JobPosting.recruiter_id,
+                user,
+            )
+        )
     )
     hits = top_k(
         db, query=from_blob(row.vector, row.dim), owner_kind=OwnerKind.posting, model=model,
@@ -213,7 +226,7 @@ def my_match(
     profile: DeveloperProfile = Depends(current_profile),
     db: Session = Depends(get_db),
 ) -> MyMatchOut | JobQueued:
-    posting = load_open_posting(db, posting_id)
+    posting = load_open_posting(db, posting_id, user)
     # Same gate as applying: otherwise throwaway accounts could spend LLM calls.
     if not is_verified(db, profile):
         raise HTTPException(403, VERIFY_MESSAGE)

@@ -19,6 +19,7 @@ from firstdev.models import (
     PostingStatus,
     User,
 )
+from firstdev.worlds import same_world
 
 router = APIRouter()
 
@@ -49,7 +50,13 @@ def invite(
     if posting.status != PostingStatus.open:
         raise HTTPException(409, "posting is not open")
     # Missing and opted-out targets share one response so this can't be used to probe who exists.
-    target = db.get(DeveloperProfile, body.profile_id)
+    target = db.scalar(
+        same_world(
+            select(DeveloperProfile).where(DeveloperProfile.user_id == body.profile_id),
+            DeveloperProfile.user_id,
+            user,
+        )
+    )
     if target is None or not target.open_to_opportunities:
         raise HTTPException(404, "not found")
     since = datetime.now(UTC) - timedelta(hours=24)
@@ -72,13 +79,19 @@ def invite(
 
 @router.get("/me/invitations", response_model=list[InvitationOut])
 def my_invitations(
-    profile: DeveloperProfile = Depends(current_profile), db: Session = Depends(get_db)
+    user: User = Depends(auth.current_user),
+    profile: DeveloperProfile = Depends(current_profile),
+    db: Session = Depends(get_db),
 ) -> list[InvitationOut]:
     rows = db.execute(
-        select(Invitation, JobPosting.title)
-        .join(JobPosting, JobPosting.id == Invitation.posting_id)
-        .where(Invitation.profile_id == profile.user_id)
-        .order_by(Invitation.created_at.desc())
+        same_world(  # defence in depth: the inviting posting must be in the caller's world
+            select(Invitation, JobPosting.title)
+            .join(JobPosting, JobPosting.id == Invitation.posting_id)
+            .where(Invitation.profile_id == profile.user_id)
+            .order_by(Invitation.created_at.desc()),
+            JobPosting.recruiter_id,
+            user,
+        )
     )
     return [
         InvitationOut(

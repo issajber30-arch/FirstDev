@@ -37,6 +37,34 @@ ALIASES: dict[str, str] = {
     "tf": "terraform",
 }
 
+# Hebrew spellings of tech names (exact keys). NFKC does not unify the Hebrew geresh (U+05F3)
+# with the ASCII apostrophe, so every geresh word carries both spellings.
+_GERESH = "\u05f3"
+_HEBREW: dict[str, str] = {
+    "פייתון": "python",
+    f"ג{_GERESH}אווהסקריפט": "javascript",
+    "טייפסקריפט": "typescript",
+    "ריאקט": "react",
+    "נוד": "node.js",
+    f"נוד.ג{_GERESH}ייאס": "node.js",
+    f"ג{_GERESH}אווה": "java",
+    "דוקר": "docker",
+    "קוברנטיס": "kubernetes",
+    "פוסטגרס": "postgresql",
+    "מונגו": "mongodb",
+    "גיט": "git",
+    "לינוקס": "linux",
+    "אנגולר": "angular",
+    "וויו": "vue",
+    f"ג{_GERESH}נגו": "django",
+    "פלאסק": "flask",
+    "סי שארפ": "c#",
+    "סי פלוס פלוס": "c++",
+}
+for _k, _v in _HEBREW.items():
+    ALIASES[_k] = _v
+    ALIASES[_k.replace(_GERESH, "'")] = _v
+
 # Package names (casefolded) that prove a skill when found in a repo's manifests.
 DEPENDENCY_SKILLS: dict[str, str] = {
     "fastapi": "fastapi",

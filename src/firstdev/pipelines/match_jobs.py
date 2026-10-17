@@ -28,7 +28,9 @@ from firstdev.models import (
     RepoAnalysis,
     Repository,
     SkillProfile,
+    User,
 )
+from firstdev.worlds import in_world, same_world
 
 log = logging.getLogger("firstdev.match_jobs")
 
@@ -176,6 +178,8 @@ def handle_score_pair(db: Session, job: Job, llm: LLM) -> None:
     profile = db.get(DeveloperProfile, job.payload.get("profile_id") or "")
     if posting is None or profile is None:  # deleted meanwhile
         return
+    if not in_world(db, profile.user_id, db.get(User, posting.recruiter_id)):
+        return  # never score across worlds, whatever the payload says
     ms = score_and_store(
         db,
         llm,
@@ -209,10 +213,15 @@ def handle_rank_posting(db: Session, job: Job, llm: LLM) -> None:
         return
     _embed_posting(db, posting)  # inline: the queued embed job may not have run yet
     # shortcut: is_verified is one query per opted-in profile; push into SQL past ~10k profiles.
+    recruiter = db.get(User, posting.recruiter_id)
     pool = [
         p
         for p in db.scalars(
-            select(DeveloperProfile).where(DeveloperProfile.open_to_opportunities.is_(True))
+            same_world(  # the recruiter's world only
+                select(DeveloperProfile).where(DeveloperProfile.open_to_opportunities.is_(True)),
+                DeveloperProfile.user_id,
+                recruiter,
+            )
         )
         if is_verified(db, p)
     ]

@@ -136,6 +136,7 @@ def issue_badges(
             badge = SkillBadge(profile_id=a.profile_id, skill=skill, source=BadgeSource.assessment)
             db.add(badge)
         badge.level = round(pct)
+        badge.created_at = now  # a retake refreshes the badge; the public page shows this date
         badge.evidence = {"assessment_id": a.id}
         badge.expires_at = now + BADGE_TTL
 

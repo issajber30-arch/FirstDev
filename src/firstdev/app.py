@@ -5,12 +5,14 @@ from firstdev.api import (
     applications,
     assessments,
     auth,
+    connections,
     cv,
     invitations,
     jobs,
     matches,
     postings,
     profiles,
+    public,
     repos,
 )
 from firstdev.config import get_settings
@@ -44,6 +46,8 @@ def create_app() -> FastAPI:
     app.include_router(invitations.router)
     app.include_router(matches.router)
     app.include_router(assessments.router)
+    app.include_router(connections.router)
+    app.include_router(public.router)
     # Largest legit request is a 5 MB CV plus multipart framing.
     app.add_middleware(CSRFMiddleware)
     app.add_middleware(BodySizeLimit, max_bytes=PDF_MAX + 64 * 1024)

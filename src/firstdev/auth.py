@@ -128,6 +128,24 @@ class FailureLimiter:
 login_limiter = FailureLimiter()
 
 
+class RateLimiter(FailureLimiter):
+    """Sliding-window request counter per key: every request counts, not just failures."""
+
+    # shortcut: in-memory, per-process (inherited); move to shared store when >1 API process
+    def __init__(self, max_hits: int = 60, window_seconds: int = 60, max_keys: int = 10_000):
+        super().__init__(max_hits, window_seconds, max_keys)
+
+    def hit(self, key: str) -> bool:
+        """Record one request; False (and not recorded) once the key is over its limit."""
+        if self.blocked(key):
+            return False
+        self.fail(key)
+        return True
+
+
+public_profile_limiter = RateLimiter()  # GET /u/{handle}: 60/min per client IP
+
+
 def client_ip(request: Request) -> str:
     """The caller's IP. Behind the Next.js proxy the real one arrives in a header, trusted
     only when the proxy proves itself with the shared secret (X-Forwarded-For is never trusted)."""
