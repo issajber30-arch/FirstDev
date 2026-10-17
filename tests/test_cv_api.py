@@ -363,3 +363,11 @@ def test_body_limit_counts_streamed_bytes_without_content_length():
     scope = {"type": "http", "headers": []}  # chunked: no content-length
     asyncio.run(BodySizeLimit(app, max_bytes=1000)(scope, receive, send))
     assert sent[0]["status"] == 413
+
+
+def test_cv_parse_enqueues_embed_profile(client, dev_headers, upload, work, factory):
+    upload(CV)
+    work(GOOD)
+    with factory() as s:
+        (j,) = s.scalars(select(Job).where(Job.kind == JobKind.embed_profile)).all()
+        assert j.status == JobStatus.queued and list(j.payload) == ["profile_id"]

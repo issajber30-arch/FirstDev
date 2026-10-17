@@ -8,13 +8,14 @@ import json
 import logging
 import math
 import re
+import tomllib
 from collections import Counter
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
 from firstdev.github import GitHubError, GitHubTransientError, get_github
-from firstdev.jobs import HANDLERS
+from firstdev.jobs import HANDLERS, enqueue_embed_profile
 from firstdev.llm import LLM
 from firstdev.models import Job, JobKind, RepoAnalysis, Repository
 from firstdev.schemas.cv import Dropped
@@ -158,6 +159,70 @@ def load_file(raw: bytes) -> tuple[str, dict[str, int]] | None:
         return None
 
 
+# --- dependencies -----------------------------------------------------------------------------
+
+_MAX_DEPS = 200
+_REQ_NAME_RE = re.compile(r"[^\s\[<>=!~;,]+")
+_GO_REQ_RE = re.compile(r"^(?:require\s+)?([^\s()]+)\s+v\S+")
+
+
+def _req_name(spec: str) -> str | None:
+    m = _REQ_NAME_RE.match(spec.strip())
+    return m[0].casefold() if m else None
+
+
+def _deps_for(base: str, text: str) -> list[str]:
+    if base == "pyproject.toml":
+        data = tomllib.loads(text)
+        proj = data.get("project") or {}
+        specs = list(proj.get("dependencies") or [])
+        for group in (proj.get("optional-dependencies") or {}).values():
+            specs += group
+        poetry = (data.get("tool") or {}).get("poetry") or {}
+        names = [_req_name(x) for x in specs]
+        names += [str(k).casefold() for k in (poetry.get("dependencies") or {})]
+        return [n for n in names if n and n != "python"]
+    if base == "package.json":
+        data = json.loads(text)
+        keys = []
+        for sect in ("dependencies", "devDependencies"):
+            if isinstance(data.get(sect), dict):
+                keys += data[sect]
+        return [str(k).casefold() for k in keys]
+    if base.startswith("requirements") and base.endswith(".txt"):
+        out = []
+        for line in text.splitlines():
+            line = line.split("#", 1)[0].strip()
+            if line and not line.startswith("-"):
+                out.append(_req_name(line))
+        return [n for n in out if n]
+    if base == "go.mod":
+        out = []
+        for line in text.splitlines():
+            m = _GO_REQ_RE.match(line.split("//", 1)[0].strip())
+            if m:
+                mod = m[1]
+                if mod.startswith("github.com/"):
+                    mod = "/".join(mod.split("/")[1:][-2:])
+                out.append(mod.casefold())
+        return out
+    if base == "cargo.toml":
+        deps = tomllib.loads(text).get("dependencies") or {}
+        return [str(k).casefold() for k in deps]
+    return []
+
+
+def parse_dependencies(texts: dict[str, str]) -> list[str]:
+    """Package names from known manifests: lower-cased, sorted, unique, capped. Never raises."""
+    found: set[str] = set()
+    for path, text in texts.items():
+        try:
+            found.update(_deps_for(path.split("/")[-1].lower(), text))
+        except Exception:  # noqa: S112  (one malformed manifest must not sink the analysis)
+            continue
+    return sorted(found)[:_MAX_DEPS]
+
+
 # --- metrics ----------------------------------------------------------------------------------
 
 
@@ -229,6 +294,7 @@ def compute_metrics(
         "languages": {k: v for k, v in languages.items() if isinstance(v, int)},
         "total_files": len(blobs),
         "files_by_extension": dict(ext_counts.most_common(10)),
+        "dependencies": parse_dependencies(texts),
         "has_tests": _TEST in ranks.values(),
         "has_ci": _CI in ranks.values(),
         "has_lint_config": _LINT in ranks.values(),
@@ -403,6 +469,7 @@ def _analyze(db: Session, repo: Repository, gh, llm: LLM) -> None:
         )
     )
     db.commit()
+    enqueue_embed_profile(db, repo.profile_id)
     log.info("repo analysis stored repository=%s files=%d model=%s", repo.id, len(texts), model)
 
 

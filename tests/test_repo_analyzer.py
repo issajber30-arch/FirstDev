@@ -348,7 +348,7 @@ def analyses(factory):
 
 def job(factory):
     with factory() as s:
-        return s.scalars(select(Job)).one()
+        return s.scalars(select(Job).where(Job.kind == JobKind.repo_analyze)).one()
 
 
 def test_end_to_end_stores_analysis(run, factory):
@@ -380,7 +380,7 @@ def test_end_to_end_stores_analysis(run, factory):
         repo = s.scalars(select(Repository)).one()
         assert (repo.is_fork, repo.stars) == (True, 42)
         assert repo.pushed_at.year == 2026
-        assert s.scalars(select(Job)).one().status == JobStatus.done
+        assert job(factory).status == JobStatus.done
     _schema, system, content = llm.calls[0]
     assert system == SYSTEM_PROMPT
     assert content.startswith("<untrusted_repo_meta>")
@@ -483,3 +483,21 @@ def test_logs_contain_no_file_content(run, caplog):
 
 def test_handler_registered():
     assert HANDLERS[JobKind.repo_analyze] is repo_analyzer.handle_repo_analyze
+
+
+# --- M7: dependencies and embed trigger ---
+
+
+def test_analysis_stores_dependencies(run, factory):
+    gh = FakeGitHub({"pyproject.toml": '[project]\ndependencies = ["fastapi>=0.1"]\n'})
+    run(gh, assess())
+    (a,) = analyses(factory)
+    assert a.metrics["dependencies"] == ["fastapi"]
+
+
+def test_analysis_enqueues_one_embed_profile(run, factory, setup):
+    user, _ = setup
+    run(FakeGitHub({"a.py": "x = 1"}), assess())
+    with factory() as s:
+        jobs = s.scalars(select(Job).where(Job.kind == JobKind.embed_profile)).all()
+    assert [(j.user_id, j.payload) for j in jobs] == [(user.id, {"profile_id": user.id})]

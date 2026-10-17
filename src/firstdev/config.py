@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     jwt_ttl_minutes: int = 15
     llm_model: str = "claude-opus-5-5"
     llm_effort: str = "medium"
+    # Where fastembed caches the embedding model (downloaded once, by the worker only).
+    model_cache: str = "~/.cache/firstdev/models"
     # Unprefixed env var (shared convention); read-only public-repo token, never logged.
     github_token: SecretStr | None = Field(default=None, validation_alias="GITHUB_TOKEN")
 

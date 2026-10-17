@@ -8,7 +8,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from firstdev.jobs import FAILURE_HOOKS, HANDLERS
+from firstdev.jobs import FAILURE_HOOKS, HANDLERS, enqueue_embed_profile
 from firstdev.llm import LLM
 from firstdev.models import CvDocument, CvParse, CvStatus, Job, JobKind
 from firstdev.schemas.cv import CVData, CVExtraction, Dropped, Gap
@@ -247,6 +247,7 @@ def handle_cv_parse(db: Session, job: Job, llm: LLM) -> None:
     )
     doc.status = CvStatus.parsed
     db.commit()
+    enqueue_embed_profile(db, doc.profile_id)
 
 
 def mark_cv_failed(db: Session, job: Job) -> None:

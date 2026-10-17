@@ -74,7 +74,7 @@ src/firstdev/
 
 Skill sources:
 - **CV:** skills from the latest `CvParse.data.skills`, all of which already passed the evidence-quote check. Level `cv` gives a weight of 0.6.
-- **Repos:** from `RepoAnalysis.metrics.languages` (bytes ≥ 5% of the repo or ≥ 10 KB) and from the new `metrics.dependencies`. Level `repo` gives a weight of 1.0.
+- **Repos:** from `RepoAnalysis.metrics.languages` (bytes ≥ 2 KB, and ≥ 5% of the repo or ≥ 10 KB) and from the new `metrics.dependencies`. Level `repo` gives a weight of 1.0. A repo whose `tutorial_likelihood` is ≥ 0.7 proves nothing at repo level; its skills only count if they are also claimed in the CV.
 - If both sources give the same skill, the highest level wins.
 
 **Dependencies (Repo-Analyzer change, deterministic, no LLM):**

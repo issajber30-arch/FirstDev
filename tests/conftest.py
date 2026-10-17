@@ -119,3 +119,13 @@ def posting(db, user_factory):
     db.add(p)
     db.commit()
     return p
+
+
+@pytest.fixture(autouse=True)
+def fake_embedder(monkeypatch):
+    """No test may build a FastEmbedder or download a model: get_embedder returns a fake."""
+    from firstdev.matching import embeddings
+
+    fake = embeddings.FakeEmbedder()
+    monkeypatch.setattr(embeddings, "get_embedder", lambda: fake)
+    return fake

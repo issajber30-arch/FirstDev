@@ -32,6 +32,24 @@ def enqueue(db: Session, user: User, kind: JobKind, payload: dict) -> Job:
     return job
 
 
+def enqueue_embed_profile(db: Session, profile_id: str) -> Job | None:
+    """Queue an embed_profile job for the profile's owner unless one is already waiting."""
+    user = db.get(User, profile_id)  # developer_profiles.user_id is the user's id
+    if user is None:
+        return None
+    payload = {"profile_id": profile_id}
+    pending = db.scalars(
+        select(Job).where(
+            Job.user_id == user.id,
+            Job.kind == JobKind.embed_profile,
+            Job.status == JobStatus.queued,
+        )
+    ).all()
+    if any(j.payload == payload for j in pending):
+        return None
+    return enqueue(db, user, JobKind.embed_profile, payload)
+
+
 def claim_next(db: Session, *, now: datetime | None = None) -> Job | None:
     # shortcut: single worker only; upgrade to Postgres SKIP LOCKED when we need >1 worker.
     oldest = (
