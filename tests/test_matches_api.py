@@ -65,7 +65,7 @@ def verify(db, user_id, skills, repo_skills=(), gaps=()):
         RepoAnalysis(
             repository_id=repo.id, commit_sha="a" * 40,
             metrics={"languages": {s.title(): 50_000 for s in repo_skills}},
-            assessment={"complexity": "medium", "architecture_summary": "Clean layers.",
+            assessment={"complexity": 3, "architecture_summary": "Clean layers.",
                         "best_practices": []},
             tutorial_likelihood=0.0, model="m",
         )
@@ -151,7 +151,7 @@ def test_card_has_exact_allowlist(client, db, factory, user_factory, rec, pid):
     assert card["verified_skills"] == ["python"] and card["cv_skills"] == ["fastapi"]
     assert card["tier"] == "junior" and card["reasons"] == ["fits well"]
     assert len(card["repos"]) == 1 and set(card["repos"][0]) == REPO_KEYS
-    assert card["repos"][0] == {"name": "o/r", "complexity": "medium", "summary": "Clean layers."}
+    assert card["repos"][0] == {"name": "o/r", "complexity": 3, "summary": "Clean layers."}
     raw = str(card).lower()
     for banned in ("gap", "feedback", "adjustment", "learn go", "secret", "email", "@x.com"):
         assert banned not in raw

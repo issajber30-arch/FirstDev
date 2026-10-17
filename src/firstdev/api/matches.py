@@ -47,7 +47,7 @@ class JobQueued(BaseModel):
 
 class RepoCard(BaseModel):
     name: str
-    complexity: str | None
+    complexity: int | None  # RepoAssessment.complexity is 1..5
     summary: str
 
 
