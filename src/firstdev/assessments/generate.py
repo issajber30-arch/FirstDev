@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from firstdev.jobs import FAILURE_HOOKS, HANDLERS, enqueue
-from firstdev.llm import LLM, LLMInvalidOutput
+from firstdev.llm import LLM, LLMInvalidOutput, job_context
 from firstdev.matching.profile import build_skill_profile
 from firstdev.models import (
     Application,
@@ -243,7 +243,9 @@ def handle_assessment_generate(db: Session, job: Job, llm: LLM) -> None:
     }
     content = wrap_untrusted("assessment_context", json.dumps(context, ensure_ascii=False))
     # No commit before this call: a failure rolls back and leaves the assessment `generating`.
-    result = llm.extract(GeneratedAssessment, GENERATE_PROMPT, content)
+    result = llm.extract(
+        GeneratedAssessment, GENERATE_PROMPT, content, context=job_context(db, job)
+    )
     qs = shuffle_questions(validate_generated(result.data, a.skills), secrets.SystemRandom())
     for i, q in enumerate(qs):
         db.add(

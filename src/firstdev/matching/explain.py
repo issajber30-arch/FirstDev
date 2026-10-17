@@ -6,7 +6,7 @@ import json
 
 from pydantic import BaseModel
 
-from firstdev.llm import LLM
+from firstdev.llm import LLM, LLMContext
 from firstdev.security.injection import wrap_untrusted
 from firstdev.skills import normalize_skill
 
@@ -115,8 +115,18 @@ def validate_review(review: MatchReview, posting, skills: list[dict]) -> dict:
     }
 
 
-def review_pair(llm: LLM, skill_profile, posting, repo_highlights: list[dict]) -> tuple[dict, str]:
+def review_pair(
+    llm: LLM,
+    skill_profile,
+    posting,
+    repo_highlights: list[dict],
+    *,
+    context: LLMContext | None = None,
+) -> tuple[dict, str]:
     result = llm.extract(
-        MatchReview, REVIEW_PROMPT, review_input(skill_profile, posting, repo_highlights)
+        MatchReview,
+        REVIEW_PROMPT,
+        review_input(skill_profile, posting, repo_highlights),
+        context=context,
     )
     return validate_review(result.data, posting, skill_profile.skills), result.model

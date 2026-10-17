@@ -18,6 +18,17 @@ from firstdev.llm import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _ledger_db(engine, monkeypatch):
+    """AnthropicLLM reserves budget in the DB: point its default sessions at the test engine."""
+    from sqlalchemy.orm import sessionmaker
+
+    from firstdev import db as db_module
+
+    factory = sessionmaker(engine, expire_on_commit=False)
+    monkeypatch.setattr(db_module, "get_sessionmaker", lambda: factory)
+
+
 class Out(BaseModel):
     name: str
 

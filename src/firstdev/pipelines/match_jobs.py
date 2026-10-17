@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from firstdev.jobs import HANDLERS
-from firstdev.llm import LLM
+from firstdev.llm import LLM, LLMContext, job_context
 from firstdev.matching import embeddings
 from firstdev.matching.explain import review_pair
 from firstdev.matching.profile import build_skill_profile, is_verified, posting_fingerprint
@@ -121,7 +121,13 @@ def _repo_highlights(db: Session, profile: DeveloperProfile) -> list[dict]:
 
 
 def score_and_store(
-    db: Session, llm: LLM, *, posting: JobPosting, profile: DeveloperProfile, explain: bool
+    db: Session,
+    llm: LLM,
+    *,
+    posting: JobPosting,
+    profile: DeveloperProfile,
+    explain: bool,
+    context: LLMContext | None = None,
 ) -> MatchScore:
     """Score one pair, reusing a fresh cached row. Flushes but never commits: if the LLM call
     fails nothing half-written survives (run_once rolls back)."""
@@ -137,7 +143,9 @@ def score_and_store(
     eq: dict[str, str] = {}
     adjustment, reason, reasons, feedback, model = 0, "", [], {}, "formula"
     if explain:
-        review, model = review_pair(llm, sp, posting, _repo_highlights(db, profile))
+        review, model = review_pair(
+            llm, sp, posting, _repo_highlights(db, profile), context=context
+        )
         eq, adjustment, reason = (
             review["equivalences"],
             review["adjustment"],
@@ -169,7 +177,12 @@ def handle_score_pair(db: Session, job: Job, llm: LLM) -> None:
     if posting is None or profile is None:  # deleted meanwhile
         return
     ms = score_and_store(
-        db, llm, posting=posting, profile=profile, explain=bool(job.payload.get("explain"))
+        db,
+        llm,
+        posting=posting,
+        profile=profile,
+        explain=bool(job.payload.get("explain")),
+        context=job_context(db, job),
     )
     app = db.get(Application, job.payload.get("application_id") or "")
     if app is not None and app.job_posting_id == posting.id and app.profile_id == profile.user_id:
@@ -228,13 +241,16 @@ def handle_rank_posting(db: Session, job: Job, llm: LLM) -> None:
     seen = set(order)
     order += [p.user_id for p in pool if p.user_id not in seen]
     by_id = {p.user_id: p for p in pool}
+    ctx = job_context(db, job)
     scored = [
         score_and_store(db, llm, posting=posting, profile=by_id[pid], explain=False)
         for pid in order[:RECALL_K]
     ]
     scored.sort(key=lambda m: m.base_score, reverse=True)
     for m in scored[:EXPLAIN_TOP]:
-        score_and_store(db, llm, posting=posting, profile=by_id[m.profile_id], explain=True)
+        score_and_store(
+            db, llm, posting=posting, profile=by_id[m.profile_id], explain=True, context=ctx
+        )
     db.commit()
     log.info("ranked posting=%s candidates=%d explained=%d", posting.id, len(scored),
              min(len(scored), EXPLAIN_TOP))  # fmt: skip

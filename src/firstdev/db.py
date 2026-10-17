@@ -29,6 +29,11 @@ def _sessionmaker() -> sessionmaker[Session]:
     return sessionmaker(get_engine(), expire_on_commit=False)
 
 
+def get_sessionmaker() -> sessionmaker[Session]:
+    """Public handle for code that needs its own short transaction (e.g. the LLM budget)."""
+    return _sessionmaker()
+
+
 def get_db() -> Iterator[Session]:
     with _sessionmaker()() as session:
         yield session

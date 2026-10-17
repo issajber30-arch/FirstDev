@@ -1,5 +1,6 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -23,6 +24,9 @@ class Settings(BaseSettings):
     proxy_secret: SecretStr | None = None
     llm_model: str = "claude-opus-5-5"
     llm_effort: str = "medium"
+    # "fake" swaps in CannedLLM (no API calls, no cost); refused in prod.
+    llm_mode: Literal["real", "fake"] = "real"
+    llm_daily_usd: float = 5.0  # global cap across all users and sandboxes, UTC day
     # Where fastembed caches the embedding model (downloaded once, by the worker only).
     model_cache: str = "~/.cache/firstdev/models"
     # Unprefixed env var (shared convention); read-only public-repo token, never logged.
@@ -38,6 +42,8 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _prod_requirements(self) -> "Settings":
         if self.env == "prod":
+            if self.llm_mode == "fake":
+                raise ValueError("FIRSTDEV_LLM_MODE=fake is not allowed when env is prod")
             if self.proxy_secret is None or not self.proxy_secret.get_secret_value():
                 raise ValueError("FIRSTDEV_PROXY_SECRET is required when env is prod")
             if not self.cookie_secure:

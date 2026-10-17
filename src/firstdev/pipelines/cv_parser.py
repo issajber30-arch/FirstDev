@@ -9,7 +9,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from firstdev.jobs import FAILURE_HOOKS, HANDLERS, enqueue_embed_profile
-from firstdev.llm import LLM
+from firstdev.llm import LLM, job_context
 from firstdev.models import CvDocument, CvParse, CvStatus, Job, JobKind
 from firstdev.schemas.cv import CVData, CVExtraction, Dropped, Gap
 from firstdev.security.injection import scan, wrap_untrusted
@@ -235,7 +235,12 @@ def handle_cv_parse(db: Session, job: Job, llm: LLM) -> None:
     doc = db.get(CvDocument, cv_id) if cv_id else None
     if doc is None or doc.extracted_text is None:  # deleted by the user meanwhile: nothing to do
         return
-    result = llm.extract(CVExtraction, SYSTEM_PROMPT, wrap_untrusted("cv", doc.extracted_text))
+    result = llm.extract(
+        CVExtraction,
+        SYSTEM_PROMPT,
+        wrap_untrusted("cv", doc.extracted_text),
+        context=job_context(db, job),
+    )
     data = validate_extraction(result.data, doc.extracted_text)
     db.add(
         CvParse(

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from firstdev.github import GitHubError, GitHubTransientError, get_github
 from firstdev.jobs import HANDLERS, enqueue_embed_profile
-from firstdev.llm import LLM
+from firstdev.llm import LLM, LLMContext, job_context
 from firstdev.models import Job, JobKind, RepoAnalysis, Repository
 from firstdev.schemas.cv import Dropped
 from firstdev.schemas.repo import RepoAssessment
@@ -383,12 +383,12 @@ def handle_repo_analyze(db: Session, job: Job, llm: LLM) -> None:
         return
     gh = get_github()
     try:
-        _analyze(db, repo, gh, llm)
+        _analyze(db, repo, gh, llm, job_context(db, job))
     finally:
         gh.close()
 
 
-def _analyze(db: Session, repo: Repository, gh, llm: LLM) -> None:
+def _analyze(db: Session, repo: Repository, gh, llm: LLM, ctx: LLMContext | None = None) -> None:
     owner, name = repo.owner, repo.name
     meta = gh.repo(owner, name)
     repo.is_fork = bool(meta.get("fork"))
@@ -450,7 +450,7 @@ def _analyze(db: Session, repo: Repository, gh, llm: LLM) -> None:
         content = wrap_untrusted("repo_meta", json.dumps(repo_meta)) + "".join(
             "\n" + wrap_untrusted("file", t, {"path": p}) for p, t in texts.items()
         )
-        result = llm.extract(RepoAssessment, SYSTEM_PROMPT, content)
+        result = llm.extract(RepoAssessment, SYSTEM_PROMPT, content, context=ctx)
         assessment, dropped = validate_assessment(result.data, set(texts))
         # Blend so neither the code signals nor the model's judgment alone decides.
         likelihood = round(0.5 * assessment["tutorial_likelihood"] + 0.5 * heuristic, 3)

@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from firstdev.jobs import FAILURE_HOOKS, HANDLERS
-from firstdev.llm import LLM
+from firstdev.llm import LLM, job_context
 from firstdev.matching.profile import build_skill_profile
 from firstdev.models import (
     Assessment,
@@ -196,7 +196,11 @@ def handle_assessment_grade(db: Session, job: Job, llm: LLM) -> None:
             + wrap_untrusted("candidate_answer", ans.text, {"question_id": q.id})
         )
     # No commit before the call: a failure rolls back and the failure hook marks it failed.
-    result = llm.extract(GradeResult, GRADE_PROMPT, "\n\n".join(entries)) if entries else None
+    result = (
+        llm.extract(GradeResult, GRADE_PROMPT, "\n\n".join(entries), context=job_context(db, job))
+        if entries
+        else None
+    )
     apply_grades(db, a, result.data if result else GradeResult(grades=[]))
     finalize(db, a)
 

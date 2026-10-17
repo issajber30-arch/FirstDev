@@ -1,12 +1,13 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 import enum
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Enum,
     Float,
@@ -91,6 +92,12 @@ class InvitationStatus(enum.StrEnum):
 class OwnerKind(enum.StrEnum):
     profile = "profile"
     posting = "posting"
+
+
+class LedgerStatus(enum.StrEnum):
+    reserved = "reserved"
+    settled = "settled"
+    released = "released"
 
 
 class JobKind(enum.StrEnum):
@@ -398,6 +405,27 @@ class Job(Base):
     last_error: Mapped[str | None] = mapped_column(Text)
     locked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     run_after: Mapped[datetime | None] = mapped_column(UTCDateTime())  # retry backoff
+    created_at: Mapped[datetime] = _created()
+
+
+class LlmLedger(Base):
+    """One LLM call's spend: reserved at worst case before the call, settled to actual after."""
+
+    __tablename__ = "llm_ledger"
+
+    id: Mapped[str] = _pk()
+    day: Mapped[date] = mapped_column(Date, index=True)  # UTC
+    # SET NULL (not CASCADE): deleting a user must not erase what was spent today.
+    user_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    world_id: Mapped[str | None] = mapped_column(String(36))
+    kind: Mapped[str] = mapped_column(String(40))
+    reserved_usd: Mapped[float] = mapped_column(Float)
+    actual_usd: Mapped[float | None] = mapped_column(Float)
+    status: Mapped[LedgerStatus] = mapped_column(
+        _enum(LedgerStatus, "ledger_status"), default=LedgerStatus.reserved
+    )
     created_at: Mapped[datetime] = _created()
 
 
