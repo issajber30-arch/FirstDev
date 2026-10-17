@@ -1,23 +1,27 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Notice } from "@/components/ui/Notice";
 import { buttonClass } from "@/components/ui/Button";
 import { Link } from "@/i18n/navigation";
 import { ApiError, fetcher } from "@/lib/api";
-import { POLL_MS, isActive } from "@/lib/dev";
+import { POLL_MS, isActive, reasonKey } from "@/lib/dev";
 import type { JobStatus, Level } from "@/lib/devTypes";
 import useSWR from "swr";
 
-/** API error -> a translated sentence. Short backend 422/413 reasons are appended as plain text. */
+/** API error -> a translated sentence. Known backend reasons are translated; for unknown ones the
+ *  English detail is appended only in the English UI (never mixed into Hebrew). */
 export function useApiErrorText() {
   const t = useTranslations("dev.errors");
+  const locale = useLocale();
   return (e: unknown): string => {
     if (!(e instanceof ApiError)) return t("generic");
-    const plain = e.detail.startsWith("[") ? "" : ` (${e.detail})`;
+    const known = reasonKey(e.detail);
+    if (known) return t(`reasons.${known.key}` as "reasons.demoLimit", { skill: known.skill ?? "" });
+    const plain = locale === "en" && !e.detail.startsWith("[") ? ` (${e.detail})` : "";
     switch (e.status) {
       case 413:
         return t("tooLarge") + plain;

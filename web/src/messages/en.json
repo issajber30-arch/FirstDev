@@ -81,7 +81,23 @@
       "demoLimit": "Demo limit reached for this sandbox.",
       "verifyRequired": "Verify your profile first.",
       "conflict": "That conflicts with the current state. Refresh and try again.",
-      "notFound": "Not found."
+      "notFound": "Not found.",
+      "reasons": {
+        "demoLimit": "Demo limit reached for this sandbox.",
+        "dailyMatch": "Daily match limit reached. Try again tomorrow.",
+        "dailyPractice": "Daily practice limit reached. Try again tomorrow.",
+        "dailyRank": "Daily ranking limit reached. Try again tomorrow.",
+        "dailyAssessment": "Daily assessment limit reached. Try again tomorrow.",
+        "dailyApplication": "Daily application limit reached. Try again tomorrow.",
+        "dailyInvite": "Daily invitation limit reached. Try again tomorrow.",
+        "verifyRequired": "Verify your profile first: a parsed CV and an analyzed repository are required.",
+        "alreadyApplied": "You already applied to this job.",
+        "alreadyInvited": "This candidate was already invited.",
+        "assessmentSent": "An assessment was already sent for this application.",
+        "timeUp": "Time is up. Your assessment was submitted.",
+        "postingClosed": "This posting is closed.",
+        "practiceCooldown": "You already practised \"{skill}\" in the last 7 days. Pick another skill or come back later."
+      }
     },
     "jobStatus": {
       "queued": "Queued",
@@ -303,6 +319,227 @@
       "remove": "Remove",
       "anonymous": "Unnamed"
     },
-    "years": "{n}y"
+    "years": "{n}y",
+    "assess": {
+      "title": "Assessments",
+      "sub": "Practice assessments verify your skills. Score 70% or more in a skill to earn a badge.",
+      "startTitle": "Start a practice assessment",
+      "skillsLabel": "Skills to practise (1 to 3)",
+      "skillsHint": "Type a skill and press Enter or comma. Example: python",
+      "removeSkill": "Remove {skill}",
+      "needSkill": "Add at least one skill.",
+      "start": "Start practice",
+      "starting": "Preparing…",
+      "listTitle": "Your assessments",
+      "empty": "No assessments yet. Start a practice above.",
+      "skills": "Skills",
+      "overall": "Overall score",
+      "open": "Open",
+      "viewReport": "View report",
+      "kind": {
+        "practice": "Practice",
+        "recruiter": "From a recruiter",
+        "auto": "Automatic"
+      },
+      "status": {
+        "generating": "Generating",
+        "ready": "Ready",
+        "in_progress": "In progress",
+        "submitted": "Grading",
+        "graded": "Graded",
+        "failed": "Failed",
+        "expired": "Expired"
+      },
+      "runTitle": "Assessment",
+      "notFound": "This assessment was not found.",
+      "generating": "Generating your questions… this takes a moment.",
+      "readyBody": "Your assessment is ready. You get 20 minutes once you start, and the timer cannot be paused.",
+      "begin": "Start assessment",
+      "grading": "Grading your answers…",
+      "failedBody": "We could not generate this assessment. Please start a new one.",
+      "expiredBody": "This assessment expired before it was finished.",
+      "questionOf": "Question {n} of {total}",
+      "shortLabel": "Your answer",
+      "counter": "{n} / {max} characters",
+      "submitAnswer": "Submit answer",
+      "finish": "Finish now",
+      "finishConfirm": "Unanswered questions score 0. Finish now?",
+      "finishYes": "Yes, finish",
+      "finishNo": "Keep going",
+      "timer": {
+        "label": "Time left",
+        "urgent": "Less than a minute left",
+        "announce": {
+          "300": "5 minutes left",
+          "60": "1 minute left",
+          "30": "30 seconds left"
+        }
+      },
+      "report": {
+        "title": "Assessment report",
+        "back": "Back to assessments",
+        "notReady": "The report is available once the assessment is graded.",
+        "goToAssessment": "Go to the assessment",
+        "overall": "Overall score",
+        "perSkill": "Score per skill",
+        "strengths": "Strengths",
+        "noStrengths": "No skill reached 70% this time.",
+        "study": "Study suggestions",
+        "revisit": "Questions to revisit:",
+        "review": "Question review",
+        "question": "Question {n}",
+        "correct": "Correct",
+        "incorrect": "Not correct",
+        "points": "{p} / {max} points",
+        "yourChoice": "Your choice",
+        "correctAnswer": "Correct answer",
+        "unanswered": "Not answered.",
+        "explanation": "Explanation",
+        "yourAnswer": "Your answer",
+        "criteriaMet": "Criteria met",
+        "criteriaMissed": "Criteria missed",
+        "feedback": "Feedback",
+        "modelAnswer": "Model answer"
+      }
+    }
+  },
+  "rec": {
+    "nav": {
+      "label": "Recruiter sections",
+      "postings": "Postings",
+      "new": "New posting"
+    },
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "tier": {
+      "junior": "Junior",
+      "mid": "Mid"
+    },
+    "flagHint": "The posting text contains patterns that look like prompt injection.",
+    "postingFlag": "Injection flag: {kinds}",
+    "postings": {
+      "title": "Postings",
+      "sub": "Your job postings. Open one to review applicants and rank candidates.",
+      "empty": "No postings yet.",
+      "create": "Create your first posting",
+      "applicants": "Applicants",
+      "candidates": "Candidates",
+      "edit": "Edit",
+      "close": "Close posting"
+    },
+    "tabs": {
+      "label": "Posting sections",
+      "applicants": "Applicants",
+      "candidates": "Candidates"
+    },
+    "form": {
+      "newTitle": "New posting",
+      "editTitle": "Edit posting",
+      "title": "Title",
+      "description": "Description",
+      "required": "Required skills (1 to 20)",
+      "optional": "Optional skills",
+      "chipHint": "Type a skill and press Enter or comma. Backspace removes the last one.",
+      "removeSkill": "Remove {skill}",
+      "tier": "Experience tier",
+      "tierAny": "Any",
+      "tierJunior": "Junior",
+      "tierMid": "Mid",
+      "salaryMin": "Salary min",
+      "salaryMax": "Salary max",
+      "currency": "Currency (3 letters)",
+      "location": "Location",
+      "remote": "Remote",
+      "autoAssessment": "Send an assessment automatically when someone applies",
+      "errTitle": "Enter a title.",
+      "errDescription": "Enter a description.",
+      "errRequired": "Add at least one required skill.",
+      "fixFields": "Please fix the highlighted fields.",
+      "saveDraft": "Save draft",
+      "publish": "Publish",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "closedNotice": "This posting is closed and cannot be edited."
+    },
+    "applicants": {
+      "empty": "No applicants yet.",
+      "anonymous": "Applicant",
+      "status": {
+        "submitted": "Submitted",
+        "reviewing": "Reviewing",
+        "interview": "Interview",
+        "rejected": "Rejected",
+        "accepted": "Accepted",
+        "withdrawn": "Withdrawn"
+      },
+      "score": "Match score",
+      "breakdown": "Score breakdown",
+      "points": "Points",
+      "part": {
+        "required": "Required skills",
+        "optional": "Optional skills",
+        "tier": "Tier fit"
+      },
+      "flag": "Injection flag: {kind}",
+      "moveTo": "Move to {status}",
+      "sendAssessment": "Send assessment",
+      "sent": "Assessment sent. The result appears below once the candidate finishes.",
+      "viewAssessment": "View assessment",
+      "hideAssessment": "Hide assessment",
+      "noAssessment": "No assessment has been sent for this application.",
+      "assessmentError": "Could not load the assessment.",
+      "assessment": "Assessment",
+      "overall": "Overall score",
+      "assessStatus": {
+        "generating": "Generating",
+        "ready": "Waiting for the candidate",
+        "in_progress": "In progress",
+        "submitted": "Grading",
+        "graded": "Graded",
+        "failed": "Failed",
+        "expired": "Expired"
+      },
+      "timeTaken": "Time taken: {m} min {s} s",
+      "criteriaMet": "Criteria met",
+      "answerFlag": "Injection flag in answer: {kind}"
+    },
+    "candidates": {
+      "rank": "Rank candidates",
+      "needOpen": "Only open postings can be ranked.",
+      "empty": "No ranked candidates yet. Press Rank candidates.",
+      "anonymous": "Candidate",
+      "tier": {
+        "junior": "Junior",
+        "mid": "Mid"
+      },
+      "score": "Match score",
+      "stale": "Stale",
+      "staleHint": "The profile or posting changed since this score. Rank again to refresh.",
+      "verifiedSkills": "Verified skills",
+      "cvSkills": "Skills claimed on the CV",
+      "repos": "Repository highlights",
+      "complexity": "complexity {n}/5",
+      "invite": "Invite",
+      "invited": "Invited"
+    }
+  },
+  "pub": {
+    "tier": {
+      "junior": "Junior",
+      "mid": "Mid"
+    },
+    "badges": "Verified skills",
+    "noBadges": "No verified skills yet.",
+    "source": {
+      "repo": "Verified from code",
+      "assessment": "Verified by assessment"
+    },
+    "limited": "Too many requests. Please try again in a minute.",
+    "notFoundTitle": "Profile not found",
+    "notFoundBody": "This profile does not exist or is not public.",
+    "home": "Back to FirstDev"
   }
 }

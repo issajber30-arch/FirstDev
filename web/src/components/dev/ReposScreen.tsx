@@ -115,7 +115,7 @@ function RepoCard({ id, owner, name }: { id: string; owner: string; name: string
           )}
           <section>
             <h3 className="mb-1 text-sm font-semibold text-text-muted">{t("tutorial")}</h3>
-            <ScoreBar value={a.tutorial_likelihood * 100} label={t("tutorial")} tone={a.tutorial_likelihood >= 0.7 ? "warning" : "primary"} />
+            <ScoreBar value={a.tutorial_likelihood * 100} unit="%" label={t("tutorial")} tone={a.tutorial_likelihood >= 0.7 ? "warning" : "primary"} />
             {a.tutorial_likelihood >= 0.7 && <p className="mt-1 text-sm text-warning">{t("tutorialWarn")}</p>}
           </section>
         </div>

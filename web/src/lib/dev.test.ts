@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
 import { describe, expect, it } from "vitest";
-import { breakdown, completeness, fieldErrors, groupSkills, languageShares } from "./dev";
+import { breakdown, completeness, fieldErrors, groupSkills, languageShares, reasonKey } from "./dev";
 import type { Overview } from "./devTypes";
 
 const ov = (over: Partial<Overview> = {}): Overview => ({ verified: false, cv: null, repos: [], skills: [], ...over });
@@ -64,5 +64,18 @@ describe("fieldErrors", () => {
   it("returns {} for plain text or garbage", () => {
     expect(fieldErrors("handle is taken")).toEqual({});
     expect(fieldErrors("null")).toEqual({});
+  });
+});
+
+describe("reasonKey", () => {
+  it("maps known backend messages", () => {
+    expect(reasonKey("demo limit reached for this sandbox")?.key).toBe("demoLimit");
+    expect(reasonKey("daily match limit reached")?.key).toBe("dailyMatch");
+    expect(reasonKey("verify your profile first: a parsed CV and an analyzed repository are required")?.key).toBe("verifyRequired");
+    expect(reasonKey("practice for 'python' was taken in the last 7 days")).toEqual({ key: "practiceCooldown", skill: "python" });
+  });
+  it("returns null for unknown messages", () => {
+    expect(reasonKey("something odd")).toBeNull();
+    expect(reasonKey("[{\"loc\":[]}]")).toBeNull();
   });
 });

@@ -72,3 +72,31 @@ export function fieldErrors(detail: string): Record<string, string> {
     return {};
   }
 }
+
+// Exact backend reasons we translate (key under dev.errors.reasons). Anything else falls back to the
+// status-based generic text, so no untranslated English is appended in other locales.
+const REASONS: [RegExp, string][] = [
+  [/^demo limit reached for this sandbox$/, "demoLimit"],
+  [/^daily match limit reached$/, "dailyMatch"],
+  [/^daily practice limit reached$/, "dailyPractice"],
+  [/^daily ranking limit reached$/, "dailyRank"],
+  [/^daily assessment limit reached$/, "dailyAssessment"],
+  [/^daily application limit reached$/, "dailyApplication"],
+  [/^daily invitation limit reached$/, "dailyInvite"],
+  [/^verify your profile first/, "verifyRequired"],
+  [/^already applied$/, "alreadyApplied"],
+  [/^already invited$/, "alreadyInvited"],
+  [/^an assessment was already sent for this application$/, "assessmentSent"],
+  [/^time is up$/, "timeUp"],
+  [/^posting is closed$/, "postingClosed"],
+  [/^practice for '(.+)' was taken in the last 7 days$/, "practiceCooldown"],
+];
+
+/** Known backend reason -> { key, skill? } (skill only for the cooldown message), else null. */
+export function reasonKey(detail: string): { key: string; skill?: string } | null {
+  for (const [re, key] of REASONS) {
+    const m = re.exec(detail);
+    if (m) return { key, skill: m[1] };
+  }
+  return null;
+}

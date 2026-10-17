@@ -5,10 +5,12 @@ export function ScoreBar({
   value,
   label,
   tone = "primary",
+  unit = "",
 }: {
   value: number;
   label: string;
   tone?: "primary" | "warning";
+  unit?: string; // e.g. "%" shown after the number
 }) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
   return (
@@ -26,8 +28,8 @@ export function ScoreBar({
           style={{ inlineSize: `${v}%` }}
         />
       </div>
-      <span className="w-10 text-end font-mono text-sm" aria-hidden="true">
-        {v}
+      <span className="w-12 text-end font-mono text-sm" dir="ltr" aria-hidden="true">
+        {v}{unit}
       </span>
     </div>
   );
