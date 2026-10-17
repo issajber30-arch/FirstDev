@@ -8,5 +8,5 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "list",
-  use: { baseURL: "http://localhost:3000", ...devices["Desktop Chrome"] },
+  use: { baseURL: process.env.BASE_URL ?? "http://localhost:3000", ...devices["Desktop Chrome"] },
 });

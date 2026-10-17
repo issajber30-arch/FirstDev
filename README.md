@@ -22,6 +22,23 @@ uv run python scripts/invites.py create --label "Dana"    # signup invite code, 
 - Part 1 design: `docs/specs/2026-10-17-part1-design.md`
 - Design system: `docs/design-system.md`
 
+## Frontend
+
+The Next.js app lives in `web/` (design: `docs/specs/2026-10-18-part5-design.md`).
+
+```sh
+scripts/dev.sh                     # API :8000 + worker + Next.js dev server :3000 (fake LLM; --real for Claude)
+scripts/web-e2e.sh                 # fresh isolated stack on :8100/:3100 (production build), then Playwright (incl. axe + security specs)
+scripts/web-e2e.sh --lighthouse    # same, then Lighthouse on the landing page (all scores must be >= 0.9)
+scripts/lighthouse.sh [URL]        # Lighthouse against an already running stack (default http://localhost:3100/en)
+```
+
+Environment variables for the web app:
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — Cloudflare Turnstile site key shown on the demo/sign-up forms (unset in dev, where the API has `TURNSTILE_DISABLED=true`).
+- `FIRSTDEV_API_URL` — where the Next.js proxy (`/api/*`) forwards to (default `http://localhost:8000`).
+- `FIRSTDEV_PROXY_SECRET` — must equal the API's `FIRSTDEV_PROXY_SECRET`; lets the proxy name the real client IP.
+
 ## Demo and deployment settings
 
 Environment variables (prefix `FIRSTDEV_`):

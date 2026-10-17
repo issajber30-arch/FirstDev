@@ -1,12 +1,19 @@
 <!-- Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 72" width="64" height="35" fill="none">
-  <rect width="132" height="72" rx="8" fill="#0B0F19"/>
-  <g stroke="#00F2FE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 62 V14 H34 M12 38 H28"/>
-    <path d="M44 62 V26 H52 Q68 26 68 44 Q68 62 52 62 Z"/>
-    <path d="M68 62 H72 V46 H80 V38 H88"/>
-    <path d="M100 8 L89 22 L100 36"/>
-    <path d="M104 36 L112 8"/>
-    <path d="M116 8 L127 22 L116 36"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -6 140 84" width="64" height="38" fill="none">
+  <title>FirstDev</title>
+  <defs>
+    <filter id="g" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="-4" y="-6" width="140" height="84" rx="12" fill="#0B0F19"/>
+  <g stroke="#00F2FE" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#g)">
+    <path d="M10 64 V38 H24 M10 51 H21"/>
+    <path d="M33 64 V24 H43 Q55 24 55 44 Q55 64 43 64 Z"/>
+    <path d="M80 14 L62 38 L80 62"/>
+    <path d="M90 64 L102 4"/>
+    <path d="M110 14 L128 38 L110 62"/>
   </g>
+  <circle cx="44" cy="44" r="4.5" fill="#FFB703"/>
 </svg>

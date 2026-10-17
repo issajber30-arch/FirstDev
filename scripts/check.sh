@@ -22,6 +22,12 @@ if [ -d web ]; then
   npm --prefix web run lint
   npx --prefix web tsc --noEmit -p web
   npm --prefix web test -- --run
+  # Security gates: no raw HTML injection, no token storage in the browser (tests may mention them).
+  if grep -rnE 'dangerouslySetInnerHTML|localStorage' web/src --include='*.ts' --include='*.tsx' --exclude='*.test.ts' --exclude='*.test.tsx'; then
+    echo "check: dangerouslySetInnerHTML/localStorage is banned under web/src" >&2
+    exit 1
+  fi
+  npm --prefix web audit --omit=dev --audit-level=high
 fi
 
 # pip-audit: fail on real vulnerabilities (exit 1 + "vulnerab" in output), warn if offline.

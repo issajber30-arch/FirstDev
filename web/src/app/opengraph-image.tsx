@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
 import { ImageResponse } from "next/og";
-import { LOGO_PATHS } from "@/components/brand/Logo";
+import { LOGO_AMBER, LOGO_CYAN, LOGO_PATHS, LOGO_WINDOW } from "@/components/brand/Logo";
 
 export const alt = "FirstDev";
 export const size = { width: 1200, height: 630 };
@@ -22,17 +22,18 @@ export default function OpengraphImage() {
           fontSize: 56,
         }}
       >
-        <svg width="660" height="360" viewBox="0 0 132 72" fill="none">
+        <svg width="660" height="360" viewBox="-4 0 140 72" fill="none">
           {LOGO_PATHS.map((d) => (
             <path
               key={d}
               d={d}
-              stroke="#00F2FE"
-              strokeWidth="3.5"
+              stroke={LOGO_CYAN}
+              strokeWidth="5.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           ))}
+          <circle {...LOGO_WINDOW} fill={LOGO_AMBER} />
         </svg>
         <div style={{ marginTop: 16 }}>FirstDev</div>
       </div>

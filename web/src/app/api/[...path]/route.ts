@@ -81,7 +81,7 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   }
 
   const out = new Headers();
-  for (const name of ["content-type", "cache-control", "retry-after", "www-authenticate"]) {
+  for (const name of ["content-type", "cache-control", "retry-after", "www-authenticate", "x-content-type-options", "x-frame-options", "content-security-policy", "referrer-policy"]) {
     const v = upstream.headers.get(name);
     if (v) out.set(name, v);
   }

@@ -1,15 +1,22 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
 import { useId } from "react";
 
-/** Paths shared with app/icon.svg: FD monogram rising into a stepped skyline of < and /> towers. */
+/**
+ * Geometry shared with app/icon.svg and the Open Graph image: an FD monogram whose verticals rise
+ * into stepped towers (F lowest, D, then the `<` and `/>` brackets as the two tallest).
+ */
 export const LOGO_PATHS = [
-  "M12 62 V14 H34 M12 38 H28", // F
-  "M44 62 V26 H52 Q68 26 68 44 Q68 62 52 62 Z", // D
-  "M68 62 H72 V46 H80 V38 H88", // stepped skyline
-  "M100 8 L89 22 L100 36", // < tower
-  "M104 36 L112 8", // / tower
-  "M116 8 L127 22 L116 36", // > tower
+  "M10 64 V38 H24 M10 51 H21", // F tower (shortest)
+  "M33 64 V24 H43 Q55 24 55 44 Q55 64 43 64 Z", // D tower
+  "M80 14 L62 38 L80 62", // < tower
+  "M90 64 L102 4", // / tower (tallest)
+  "M110 14 L128 38 L110 62", // > tower
 ];
+/** Amber lit window inside the D counter. */
+export const LOGO_WINDOW = { cx: 44, cy: 44, r: 4 };
+
+export const LOGO_CYAN = "#00F2FE";
+export const LOGO_AMBER = "#FFB703";
 
 export function Logo({
   title = "FirstDev",
@@ -23,14 +30,14 @@ export function Logo({
     <svg
       role="img"
       aria-labelledby={`logo-${uid}`}
-      viewBox="0 0 132 72"
+      viewBox="-4 0 140 72"
       className={className}
       fill="none"
     >
       <title id={`logo-${uid}`}>{title}</title>
       <defs>
-        <filter id={`glow-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2.5" result="b" />
+        <filter id={`glow-${uid}`} x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
@@ -38,8 +45,8 @@ export function Logo({
         </filter>
       </defs>
       <g
-        stroke="#00F2FE"
-        strokeWidth="3.5"
+        stroke={LOGO_CYAN}
+        strokeWidth="5.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         filter={`url(#glow-${uid})`}
@@ -48,6 +55,7 @@ export function Logo({
           <path key={d} d={d} />
         ))}
       </g>
+      <circle {...LOGO_WINDOW} fill={LOGO_AMBER} />
     </svg>
   );
 }
