@@ -60,3 +60,21 @@ def test_only_absent_key_is_named_and_values_never_printed(tmp_path):
     assert r.returncode == 2
     assert "ANTHROPIC_API_KEY" in r.stderr and "GITHUB_TOKEN" not in r.stderr
     assert "ghp-secret-value-123" not in r.stdout + r.stderr
+
+
+def test_part4_refuses_without_yes(tmp_path):
+    r = run(["--part4", "--fake"], tmp_path=tmp_path)
+    assert r.returncode == 2
+    assert "part 4" in r.stdout
+    assert "PASS" not in r.stdout
+
+
+def test_fake_does_not_need_anthropic_key():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("e2e_smoke", SCRIPT)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    keys = {"ANTHROPIC_API_KEY": None, "GITHUB_TOKEN": None}
+    assert mod.missing_keys(keys, fake=False) == ["ANTHROPIC_API_KEY"]
+    assert mod.missing_keys(keys, fake=True) == []

@@ -11,6 +11,7 @@ import os
 import re
 import secrets
 import socket
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -351,6 +352,198 @@ def run_part3(c: httpx.Client, rec: httpx.Client, app_id: str) -> list[str]:
     return phrases
 
 
+class CookieClient(httpx.Client):
+    """Cookie-session actor: echoes fd_csrf as X-CSRF-Token on every unsafe request."""
+
+    def request(self, method, url, **kw):
+        if method.upper() in ("POST", "PUT", "PATCH", "DELETE") and (
+            tok := self.cookies.get("fd_csrf")
+        ):
+            kw["headers"] = {"X-CSRF-Token": tok, **(kw.get("headers") or {})}
+        return super().request(method, url, **kw)
+
+
+def invite_code(env: dict[str, str], label: str) -> str:
+    """Create a code with the real CLI against the same DB; the code is the last stdout line."""
+    out = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        ["uv", "run", "python", "scripts/invites.py", "create", "--label", label],  # noqa: S607
+        cwd=ROOT, env=env, check=True, capture_output=True, text=True,
+    )  # fmt: skip
+    return out.stdout.strip().splitlines()[-1]
+
+
+def invite_user(base: str, env: dict[str, str], label: str) -> tuple[CookieClient, str, dict]:
+    """Register with a fresh invite code and log in; returns (client, user id, credentials)."""
+    c = CookieClient(base_url=base, timeout=30)
+    creds = {
+        "email": f"{label}-{secrets.token_hex(4)}@example.com",
+        "password": secrets.token_urlsafe(16),
+    }
+    r = c.post(
+        "/auth/register",
+        json={
+            **creds, "role": "developer", "display_name": label,
+            "invite_code": invite_code(env, label),
+        },
+    )  # fmt: skip
+    check(r.status_code == 201, f"invite register {label}", r.text)
+    check(c.post("/auth/login", json=creds).status_code == 200, f"login {label}")
+    return c, c.get("/me").json()["id"], creds
+
+
+def run_part4(base: str, env: dict[str, str], db_path: Path) -> list[str]:
+    """Part 4: sandboxes, cookies/CSRF, quotas, world isolation, public profiles, connections."""
+    print("\nPart 4: demo sandboxes, sessions, public profiles, connections.")
+    # --- 1. developer sandbox, cookies, CSRF ---
+    d = CookieClient(base_url=base, timeout=30)
+    r = d.post("/demo/sandbox", json={"role": "developer"})
+    check(r.status_code == 201, "developer sandbox created (201)", r.text)
+    me = d.get("/me").json()
+    check(me.get("display_name") == "You (Demo Developer)", "sandbox /me display_name", str(me))
+    bare = httpx.Client(base_url=base, timeout=30, cookies=d.cookies)  # cookies, no CSRF header
+    r = bare.put("/profiles/me", json={})
+    check(r.status_code == 403, "cookie write without X-CSRF-Token -> 403", str(r.status_code))
+
+    # --- 2. the world is visible: 4 postings, fixture feedback ---
+    jobs = lambda: d.get("/me/recommended-jobs").json().get("jobs", [])  # noqa: E731
+    got = poll_until(lambda: len(jobs()) == 4 and jobs(), 120) or []
+    check(len(got) == 4, "recommended-jobs lists the 4 world postings", str(len(got)))
+    if got:
+        r = d.get(f"/me/matches/{got[0]['posting_id']}")
+        m = r.json() if r.status_code == 200 else {}
+        check(
+            r.status_code == 200 and m.get("explained") is True and bool(m.get("feedback")),
+            "fixture match is explained with feedback",
+            r.text[:200],
+        )
+        check("reasons" not in m, "developer match has no reasons key")
+
+    # --- 3. AI in the sandbox (CannedLLM with --fake) ---
+    r = d.post("/profiles/me/cv", data={"text": CV_TEXT})
+    check(r.status_code == 202, "sandbox CV upload accepted", r.text)
+    if r.status_code == 202:
+        check(poll_job(d, r.json()["job_id"], 180) == "done", "CV job done")
+        cv = d.get(f"/cv/{r.json()['cv_id']}").json()
+        check(cv["status"] == "parsed", "CV parsed", str(cv["status"]))
+    r = d.post("/profiles/me/repos", json={"url": REPO_URL})
+    check(r.status_code == 202, "sandbox repo add accepted", r.text)
+    if r.status_code == 202:
+        check(poll_job(d, r.json()["job_id"], 300) == "done", "repo job done")
+    r = d.post("/me/assessments", json={"skills": ["python"]})
+    check(r.status_code == 202, "practice assessment accepted", r.text[:200])
+    if r.status_code == 202:
+        aid = r.json()["assessment_id"]
+        check(wait_status(d, aid, "ready", 180), "practice generated (ready)")
+        check(d.post(f"/assessments/{aid}/start").status_code == 200, "practice started")
+        for _ in range(12):  # cap only guards against a stuck loop
+            q = d.get(f"/assessments/{aid}/current").json()
+            if q.get("done"):
+                break
+            if q["kind"] == "mcq":
+                body = {"question_id": q["question_id"], "choice_index": 0}
+            else:
+                body = {"question_id": q["question_id"], "text": short_answer(q["skill"])}
+            if d.post(f"/assessments/{aid}/answers", json=body).status_code != 200:
+                break
+        check(wait_status(d, aid, "graded", 180), "practice graded")
+
+    # --- 4. quota ---
+    r = d.post("/profiles/me/cv", data={"text": CV_TEXT})
+    check(r.status_code == 429 and "demo limit" in r.text, "second CV -> 429 demo limit", r.text)
+
+    # --- 5. recruiter sandbox sees only its own world ---
+    rec = CookieClient(base_url=base, timeout=30)
+    r = rec.post("/demo/sandbox", json={"role": "recruiter"})
+    check(r.status_code == 201, "recruiter sandbox created", r.text)
+    rec_world = r.json().get("world_id")
+    posts = rec.get("/postings/mine").json()
+    check(bool(posts), "recruiter sees world postings", str(len(posts)))
+    if posts:
+        pid = posts[0]["id"]
+        con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)  # read-only
+        try:
+            seen = {  # every user in the recruiter's world
+                row[0]
+                for row in con.execute("SELECT id FROM users WHERE world_id = ?", (rec_world,))
+            }
+        finally:
+            con.close()
+        r = rec.post(f"/postings/{pid}/rank")
+        check(r.status_code == 202, "recruiter rank accepted", r.text)
+        if r.status_code == 202:
+            check(poll_job(rec, r.json()["job_id"], 300) == "done", "rank job done")
+        ids = {k["profile_id"] for k in rec.get(f"/postings/{pid}/candidates").json()}
+        check(bool(ids) and ids <= seen, "candidates are in the recruiter's world", str(ids - seen))
+        check(
+            me["id"] not in ids | seen,
+            "developer sandbox user is not in the recruiter's world or candidates",
+        )
+
+    # --- 6. public profile ---
+    a, a_id, a_creds = invite_user(base, env, "alice")
+    b, b_id, _ = invite_user(base, env, "bob")
+    handle = f"alice-{secrets.token_hex(3)}"
+    r = a.put(
+        "/profiles/me", json={"headline": "Backend dev", "handle": handle, "public_profile": True}
+    )
+    check(r.status_code == 200, "real dev sets handle + public", r.text)
+    r = httpx.get(f"{base}/u/{handle}", timeout=30)
+    keys = {"handle", "display_name", "headline", "tier", "verified_badges"}
+    check(
+        r.status_code == 200 and set(r.json()) == keys, "GET /u/{handle} exact keys", r.text[:200]
+    )
+    r = d.put("/profiles/me", json={"handle": "sandbox-guy"})
+    check(r.status_code == 422, "sandbox handle -> 422", str(r.status_code))
+    check(
+        httpx.get(f"{base}/u/nonexistent", timeout=30).status_code == 404, "/u/nonexistent -> 404"
+    )
+
+    # --- 7. connections ---
+    r = a.post("/connections", json={"user_id": b_id})
+    check(r.status_code == 201, "connection request A -> B", r.text)
+    if r.status_code == 201:
+        cid = r.json()["connection_id"]
+        inc = b.get("/me/connection-requests").json()["incoming"]
+        check([x["connection_id"] for x in inc] == [cid], "B sees the incoming request")
+        check(b.post(f"/connections/{cid}/accept").status_code == 200, "B accepts")
+        check(
+            [x["user_id"] for x in a.get("/me/connections").json()] == [b_id]
+            and [x["user_id"] for x in b.get("/me/connections").json()] == [a_id],
+            "both list the connection",
+        )
+    r = d.post("/connections", json={"user_id": a_id})
+    check(r.status_code == 404, "sandbox -> real user request -> 404", str(r.status_code))
+
+    # --- 8. refresh rotation over HTTP (a fresh login gives its own token family) ---
+    f = CookieClient(base_url=base, timeout=30)
+    f.post("/auth/login", json=a_creds)
+    old = next(c.value for c in f.cookies.jar if c.name == "fd_refresh")
+    check(f.post("/auth/refresh").status_code == 204, "refresh rotates (204)")
+    replay = httpx.Client(base_url=base, timeout=30)
+    replay.cookies.set("fd_refresh", old, domain="127.0.0.1", path="/auth")
+    check(replay.post("/auth/refresh").status_code == 401, "replayed old refresh token -> 401")
+    check(f.post("/auth/refresh").status_code == 401, "new token dead after reuse (family revoked)")
+    return [ANSWER_PHRASE]
+
+
+def ledger_checks(db_path: Path, cap: float) -> None:
+    """Read-only look at the budget ledger after a real-Claude run."""
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        spent, reserved, total = con.execute(
+            "SELECT COALESCE(SUM(CASE WHEN status='settled' THEN actual_usd END), 0),"
+            " COUNT(CASE WHEN status='reserved' THEN 1 END),"
+            " COALESCE(SUM(COALESCE(actual_usd, reserved_usd)), 0)"
+            " FROM llm_ledger WHERE status != 'released'"
+        ).fetchone()
+    finally:
+        con.close()
+    check(spent > 0, "ledger: settled actual_usd > 0", str(spent))
+    check(reserved == 0, "ledger: no rows left reserved", str(reserved))
+    check(total <= cap, "ledger: total within FIRSTDEV_LLM_DAILY_USD", f"{total} > {cap}")
+    print(f"Ledger cost: ${spent:.4f} settled (cap ${cap})")
+
+
 def run_flow(
     base: str, gh_token: str | None, part2: bool = False, part3: bool = False
 ) -> tuple[list[str], int]:
@@ -439,11 +632,20 @@ def run_flow(
     return [*PRIVATE_PHRASES, *extra], 0
 
 
+def missing_keys(keys: dict[str, str | None], fake: bool) -> list[str]:
+    """Required secrets that are absent; --fake never calls Claude, GitHub stays optional."""
+    return [n for n, v in keys.items() if not v and n == "ANTHROPIC_API_KEY" and not fake]
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--yes", action="store_true", help="confirm real API calls (costs money)")
     p.add_argument("--part2", action="store_true", help="also run the postings/matching flow")
     p.add_argument("--part3", action="store_true", help="also run assessments (implies --part2)")
+    p.add_argument("--part4", action="store_true", help="run ONLY the Part 4 sandbox/session flow")
+    p.add_argument(
+        "--fake", action="store_true", help="FIRSTDEV_LLM_MODE=fake: free, no Claude key"
+    )
     p.add_argument("--env-file", type=Path, default=ROOT / ".env")
     args = p.parse_args(argv)
 
@@ -461,6 +663,11 @@ def main(argv: list[str] | None = None) -> int:
                 if args.part3
                 else ""
             )
+            + (
+                "; then ONLY part 4: sandboxes, sessions, public profiles, connections"
+                if args.part4
+                else ""
+            )
             + "\nusing the REAL Anthropic and GitHub APIs. "
             "Estimated cost: a few cents.\nRe-run with --yes to proceed."
         )
@@ -468,7 +675,7 @@ def main(argv: list[str] | None = None) -> int:
     file_env = read_env_file(args.env_file)
     keys = {n: os.environ.get(n) or file_env.get(n) for n in SECRET_NAMES}
     # GitHub works unauthenticated for public repos (60 requests/hour, enough for one run).
-    missing = [n for n, v in keys.items() if not v and n != "GITHUB_TOKEN"]
+    missing = missing_keys(keys, args.fake)
     if not keys["GITHUB_TOKEN"]:
         print("warning: GITHUB_TOKEN not set; using GitHub's unauthenticated limit (60/h)")
     if missing:
@@ -485,9 +692,15 @@ def main(argv: list[str] | None = None) -> int:
             **{k: v for k, v in keys.items() if v},  # unset keys stay unset
             "FIRSTDEV_DATABASE_URL": f"sqlite:///{tmpd / 'e2e.db'}",
             "FIRSTDEV_JWT_SECRET": secrets.token_urlsafe(48),
-            "FIRSTDEV_REQUIRE_INVITE": "false",  # throwaway DB, no invite codes
+            "FIRSTDEV_REQUIRE_INVITE": "true" if args.part4 else "false",
             "FIRSTDEV_COOKIE_SECURE": "false",
+            "FIRSTDEV_COOKIE_PATH_PREFIX": "",  # direct API, no Next.js proxy
+            "FIRSTDEV_TURNSTILE_DISABLED": "true",
+            **({"FIRSTDEV_LLM_MODE": "fake"} if args.fake else {}),
         }
+        cap = float(
+            env.get("FIRSTDEV_LLM_DAILY_USD") or file_env.get("FIRSTDEV_LLM_DAILY_USD") or 5.0
+        )
         logs = {"server": tmpd / "server.log", "worker": tmpd / "worker.log"}
         phrases: list[str] = []
         try:
@@ -521,7 +734,12 @@ def main(argv: list[str] | None = None) -> int:
                 time.sleep(0.5)
             if not check(up, "server /health within 30s"):
                 raise RuntimeError("server did not start")
-            phrases, _ = run_flow(base, keys["GITHUB_TOKEN"], args.part2, args.part3)
+            if args.part4:
+                phrases = [*PRIVATE_PHRASES, *run_part4(base, env, tmpd / "e2e.db")]
+                if not args.fake:
+                    ledger_checks(tmpd / "e2e.db", cap)
+            else:
+                phrases, _ = run_flow(base, keys["GITHUB_TOKEN"], args.part2, args.part3)
         except Exception as e:  # noqa: BLE001 - any failure must still reach the report below
             check(False, f"flow aborted: {type(e).__name__}", redact(str(e), secret_values))
         finally:

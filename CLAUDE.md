@@ -15,6 +15,8 @@ Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. Author: Is
 - `uv run alembic revision --autogenerate -m "..." --rev-id 000N` — new migration; then replace any `firstdev.models.UTCDateTime` with `sa.DateTime(timezone=True)`. `tests/test_migrations.py` fails if models and migrations drift.
 - `uv run uvicorn firstdev.app:app --reload` — API; `uv run python -m firstdev.worker` — background worker (needed for CV/repo jobs)
 - `uv run python scripts/e2e_smoke.py --yes [--part2|--part3]` — real Claude + GitHub end-to-end (needs `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`; costs money — ask first)
+- `uv run python scripts/e2e_smoke.py --yes --part4 --fake` — Part 4 only (sandboxes, cookies/CSRF, invites, public profiles, connections, refresh); `--fake` uses `CannedLLM`, free, no `ANTHROPIC_API_KEY`. Without `--fake` it uses real Claude and also checks the budget ledger (costs money — ask first)
+- `uv run python scripts/invites.py create --label NAME | list | revoke` — signup invite codes (code shown once)
 
 Git hooks live in `.githooks` (`core.hooksPath`): pre-commit scans staged content for secrets, blocks `.env` and runs ruff; post-commit writes an Obsidian note. `FIRSTDEV_JWT_SECRET` (≥32 chars) is required; tests set it in `tests/conftest.py`.
 
