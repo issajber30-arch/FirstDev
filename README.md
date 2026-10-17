@@ -14,6 +14,7 @@ cp .env.example .env                      # then set FIRSTDEV_JWT_SECRET (>= 32 
 uv run alembic upgrade head               # create the SQLite database
 uv run uvicorn firstdev.app:app --reload  # run the API
 scripts/check.sh                          # headers, lint, format, tests, dependency audit
+uv run python scripts/e2e_smoke.py --yes    # real Claude + GitHub, costs a few cents
 ```
 
 - Part 1 design: `docs/specs/2026-10-17-part1-design.md`
