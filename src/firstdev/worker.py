@@ -5,6 +5,7 @@ import logging
 
 from sqlalchemy.orm import sessionmaker
 
+from firstdev.assessments import generate  # noqa: F401  (import registers handlers)
 from firstdev.db import get_engine
 from firstdev.jobs import worker_main
 from firstdev.llm import get_llm

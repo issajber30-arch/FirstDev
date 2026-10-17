@@ -100,6 +100,29 @@ class JobKind(enum.StrEnum):
     embed_posting = "embed_posting"
     score_pair = "score_pair"
     rank_posting = "rank_posting"
+    assessment_generate = "assessment_generate"
+    assessment_grade = "assessment_grade"
+
+
+class AssessmentKind(enum.StrEnum):
+    recruiter = "recruiter"
+    auto = "auto"
+    practice = "practice"
+
+
+class AssessmentStatus(enum.StrEnum):
+    generating = "generating"
+    ready = "ready"
+    in_progress = "in_progress"
+    submitted = "submitted"
+    graded = "graded"
+    failed = "failed"
+    expired = "expired"
+
+
+class QuestionKind(enum.StrEnum):
+    mcq = "mcq"
+    short = "short"
 
 
 class JobStatus(enum.StrEnum):
@@ -209,6 +232,7 @@ class SkillBadge(Base):
     level: Mapped[int] = mapped_column(Integer)
     source: Mapped[BadgeSource] = mapped_column(_enum(BadgeSource, "badge_source"))
     evidence: Mapped[dict | None] = mapped_column(JSON)
+    expires_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     created_at: Mapped[datetime] = _created()
 
 
@@ -288,6 +312,8 @@ class JobPosting(Base):
     location: Mapped[str | None] = mapped_column(String(100))
     remote: Mapped[bool] = mapped_column(Boolean, default=False)
     injection_flags: Mapped[list] = mapped_column(JSON, default=list)
+    # Per-posting switch: apply also creates an assessment (costs LLM calls, so off by default).
+    auto_assessment: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     status: Mapped[PostingStatus] = mapped_column(
         _enum(PostingStatus, "posting_status"), default=PostingStatus.draft
     )
@@ -418,3 +444,77 @@ class Invitation(Base):
         _enum(InvitationStatus, "invitation_status"), default=InvitationStatus.sent
     )
     created_at: Mapped[datetime] = _created()
+
+
+class Assessment(Base):
+    __tablename__ = "assessments"
+    __table_args__ = (
+        UniqueConstraint("application_id"),
+        CheckConstraint(
+            "kind = 'practice' OR posting_id IS NOT NULL", name="posting_for_non_practice"
+        ),
+    )
+
+    id: Mapped[str] = _pk()
+    profile_id: Mapped[str] = _fk("developer_profiles.user_id")
+    posting_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("job_postings.id", ondelete="CASCADE"), index=True
+    )
+    application_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("applications.id", ondelete="CASCADE")
+    )
+    kind: Mapped[AssessmentKind] = mapped_column(_enum(AssessmentKind, "assessment_kind"))
+    status: Mapped[AssessmentStatus] = mapped_column(
+        _enum(AssessmentStatus, "assessment_status"), default=AssessmentStatus.generating
+    )
+    skills: Mapped[list] = mapped_column(JSON)
+    created_by: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    started_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    deadline: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    submitted_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    graded_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    overall_pct: Mapped[float | None] = mapped_column(Float)
+    skill_pcts: Mapped[dict | None] = mapped_column(JSON)
+    created_at: Mapped[datetime] = _created()
+
+
+class AssessmentQuestion(Base):
+    __tablename__ = "assessment_questions"
+    __table_args__ = (
+        UniqueConstraint("assessment_id", "position"),
+        CheckConstraint(
+            "kind != 'mcq' OR (options IS NOT NULL AND correct_index BETWEEN 0 AND 3)",
+            name="mcq_fields",
+        ),
+    )
+
+    id: Mapped[str] = _pk()
+    assessment_id: Mapped[str] = _fk("assessments.id")
+    position: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[QuestionKind] = mapped_column(_enum(QuestionKind, "question_kind"))
+    skill: Mapped[str] = mapped_column(String(100))
+    difficulty: Mapped[int] = mapped_column(Integer)
+    prompt: Mapped[str] = mapped_column(Text)
+    options: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
+    correct_index: Mapped[int | None] = mapped_column(Integer)
+    explanation: Mapped[str | None] = mapped_column(Text)
+    rubric: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
+    model_answer: Mapped[str | None] = mapped_column(Text)
+
+
+class AssessmentAnswer(Base):
+    __tablename__ = "assessment_answers"
+
+    id: Mapped[str] = _pk()
+    question_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("assessment_questions.id", ondelete="CASCADE"), unique=True
+    )
+    choice_index: Mapped[int | None] = mapped_column(Integer)
+    text: Mapped[str | None] = mapped_column(Text)
+    points: Mapped[float | None] = mapped_column(Float)
+    criteria_met: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
+    feedback: Mapped[str | None] = mapped_column(Text)
+    injection_flags: Mapped[list] = mapped_column(JSON, default=list)
+    answered_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=_now)

@@ -142,10 +142,12 @@ def shuffle_questions(qs, rng):
     for q in rng.sample(qs, len(qs)):
         if q.kind == "mcq":
             order = rng.sample(range(4), 4)
-            q = q.model_copy(update={
-                "options": [q.options[i] for i in order],
-                "correct_index": order.index(q.correct_index),
-            })
+            q = q.model_copy(
+                update={
+                    "options": [q.options[i] for i in order],
+                    "correct_index": order.index(q.correct_index),
+                }
+            )
         out.append(q)
     return out
 ```

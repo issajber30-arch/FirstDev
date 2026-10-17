@@ -334,3 +334,130 @@ def test_new_tables_cascade_on_user_delete(db, posting, profile):
 def test_profile_and_posting_defaults(db, posting, profile):
     assert profile.open_to_opportunities is False
     assert posting.injection_flags == []
+
+
+# --- assessments (Part 3) ---------------------------------------------------------------------
+
+
+def _assessment(db, profile, posting=None, kind="practice", **kw):
+    from firstdev.models import Assessment, AssessmentKind
+
+    a = Assessment(
+        profile_id=profile.user_id,
+        posting_id=posting.id if posting else None,
+        kind=AssessmentKind(kind),
+        skills=["python"],
+        **kw,
+    )
+    db.add(a)
+    db.commit()
+    return a
+
+
+def _question(db, a, position=0, **kw):
+    from firstdev.models import AssessmentQuestion
+
+    vals = dict(
+        assessment_id=a.id, position=position, kind="mcq", skill="python", difficulty=1,
+        prompt="p", options=["a", "b", "c", "d"], correct_index=0,
+    )  # fmt: skip
+    q = AssessmentQuestion(**{**vals, **kw})
+    db.add(q)
+    db.commit()
+    return q
+
+
+def test_assessment_defaults_and_practice_without_posting(db, profile):
+    from firstdev.models import AssessmentStatus
+
+    a = _assessment(db, profile)
+    assert a.status == AssessmentStatus.generating and a.posting_id is None
+
+
+def test_recruiter_assessment_needs_posting(db, profile):
+    with pytest.raises(IntegrityError):
+        _assessment(db, profile, kind="recruiter")
+
+
+def test_mcq_question_needs_options_and_valid_index(db, profile):
+    a = _assessment(db, profile)
+    with pytest.raises(IntegrityError):
+        _question(db, a, options=None)
+    db.rollback()
+    with pytest.raises(IntegrityError):
+        _question(db, a, correct_index=4)
+    db.rollback()
+    _question(db, a, kind="short", options=None, correct_index=None)  # short needs neither
+
+
+def test_duplicate_question_position_rejected(db, profile):
+    a = _assessment(db, profile)
+    _question(db, a, 0)
+    with pytest.raises(IntegrityError):
+        _question(db, a, 0)
+
+
+def test_one_assessment_per_application(db, profile, posting):
+    app = Application(job_posting_id=posting.id, profile_id=profile.user_id)
+    db.add(app)
+    db.commit()
+    _assessment(db, profile, posting, kind="recruiter", application_id=app.id)
+    with pytest.raises(IntegrityError):
+        _assessment(db, profile, posting, kind="recruiter", application_id=app.id)
+
+
+def test_one_answer_per_question(db, profile):
+    from firstdev.models import AssessmentAnswer
+
+    q = _question(db, _assessment(db, profile))
+    db.add(AssessmentAnswer(question_id=q.id, choice_index=1))
+    db.commit()
+    db.add(AssessmentAnswer(question_id=q.id, choice_index=2))
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
+def _full_tree(db, profile, posting):
+    from firstdev.models import AssessmentAnswer
+
+    a = _assessment(db, profile, posting, kind="auto")
+    q = _question(db, a)
+    db.add(AssessmentAnswer(question_id=q.id, choice_index=1))
+    db.commit()
+
+
+def _counts(db):
+    from firstdev.models import Assessment, AssessmentAnswer, AssessmentQuestion
+
+    return [db.query(m).count() for m in (Assessment, AssessmentQuestion, AssessmentAnswer)]
+
+
+def test_assessment_cascades_from_profile(db, profile, posting):
+    _full_tree(db, profile, posting)
+    assert _counts(db) == [1, 1, 1]
+    db.delete(db.get(User, profile.user_id))
+    db.commit()
+    assert _counts(db) == [0, 0, 0]
+
+
+def test_assessment_cascades_from_posting(db, profile, posting):
+    _full_tree(db, profile, posting)
+    db.delete(posting)
+    db.commit()
+    assert _counts(db) == [0, 0, 0]
+
+
+def test_new_columns_and_job_kinds(db, posting, profile):
+    from firstdev.models import BadgeSource, JobKind, SkillBadge
+
+    assert posting.auto_assessment is False
+    b = SkillBadge(
+        profile_id=profile.user_id, skill="python", level=80, source=BadgeSource.assessment
+    )
+    db.add(b)
+    db.commit()
+    assert b.expires_at is None
+    u = db.get(User, profile.user_id)
+    for k in (JobKind.assessment_generate, JobKind.assessment_grade):
+        db.add(Job(user_id=u.id, kind=k, payload={}))
+    db.commit()  # the widened ck_jobs_job_kind accepts them
