@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. -->
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
