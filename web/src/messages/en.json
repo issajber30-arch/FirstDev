@@ -8,7 +8,8 @@
     "signOut": "Sign out",
     "language": "Language",
     "loading": "Loading…",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "retry": "Try again"
   },
   "landing": {
     "tagline": "Skills you can verify, not just claim.",
@@ -58,5 +59,250 @@
   "sandbox": {
     "banner": "Demo sandbox — expires in {time}",
     "expired": "Demo sandbox — expired"
+  },
+  "dev": {
+    "nav": {
+      "label": "Developer sections",
+      "dashboard": "Dashboard",
+      "profile": "Profile",
+      "cv": "CV",
+      "repos": "Repos",
+      "jobs": "Jobs",
+      "applications": "Applications",
+      "invitations": "Invitations",
+      "assessments": "Assessments",
+      "connections": "Connections"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "tooLarge": "That is too large.",
+      "invalid": "That was not accepted.",
+      "rateLimit": "Daily limit reached. Try again tomorrow.",
+      "demoLimit": "Demo limit reached for this sandbox.",
+      "verifyRequired": "Verify your profile first.",
+      "conflict": "That conflicts with the current state. Refresh and try again.",
+      "notFound": "Not found."
+    },
+    "jobStatus": {
+      "queued": "Queued",
+      "running": "Running",
+      "done": "Done",
+      "failed": "Failed",
+      "failedGeneric": "The job failed. Please try again."
+    },
+    "verify": {
+      "body": "Verify your profile first: a parsed CV and at least one analyzed repository are required.",
+      "cv": "Go to CV",
+      "repos": "Go to Repos"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Signed in as {name}",
+      "verifyTitle": "Verify your profile",
+      "verifyBody": "Parse a CV and analyze a repository to unlock job matches and applications.",
+      "verifyCta": "Start verifying",
+      "completeness": "Profile completeness",
+      "done": "Done",
+      "todo": "To do",
+      "items": {
+        "cv": "CV parsed",
+        "repo": "At least one repo analyzed",
+        "headline": "Headline",
+        "bio": "Bio",
+        "location": "Location",
+        "experience_tier": "Experience tier",
+        "github_username": "GitHub username"
+      },
+      "skills": "Skills",
+      "legend": "Legend:",
+      "legendVerified": "Verified by repo or assessment",
+      "legendCv": "CV claim",
+      "noSkills": "No skills yet. Upload a CV and add a repo.",
+      "level": {
+        "repo": "Verified by repos",
+        "assessment": "Verified by assessments",
+        "cv": "CV claims"
+      },
+      "quick": "Quick links"
+    },
+    "profile": {
+      "title": "Profile",
+      "headline": "Headline",
+      "bio": "Bio",
+      "location": "Location",
+      "tier": "Experience tier",
+      "tierAuto": "Detect from my CV",
+      "tierJunior": "Junior",
+      "tierMid": "Mid",
+      "github": "GitHub username",
+      "open": "Open to opportunities (recruiters can find and invite me)",
+      "publicSection": "Public profile",
+      "handle": "Handle (3-30 letters, digits or hyphens)",
+      "public": "Make my profile public",
+      "save": "Save profile",
+      "saving": "Saving…",
+      "saved": "Profile saved.",
+      "fixFields": "Please fix the highlighted fields."
+    },
+    "cv": {
+      "title": "CV",
+      "sub": "Upload a PDF or paste your CV text. Skills start as claims (grey) until repos or assessments back them.",
+      "uploadTitle": "Add a CV",
+      "file": "PDF file",
+      "fileHint": "PDF only, up to 5 MB.",
+      "or": "or",
+      "paste": "Paste CV text",
+      "submit": "Parse CV",
+      "uploading": "Uploading…",
+      "queued": "CV received. Parsing has started.",
+      "nothingGiven": "Choose a PDF or paste your CV text.",
+      "bothGiven": "Send either a PDF or pasted text, not both.",
+      "fileTooLarge": "The file is larger than 5 MB.",
+      "empty": "No CV yet. Upload one above.",
+      "resultTitle": "Parsed CV",
+      "needsText": "This PDF has no readable text. Paste the text of your CV instead.",
+      "flagsTitle": "Suspicious instructions found in this CV. They were ignored.",
+      "flag": "flagged",
+      "skills": "Skills",
+      "experience": "Experience",
+      "education": "Education",
+      "noEducation": "No education found.",
+      "gap": "Gap of {months} months without a listed job ({start} to {end})."
+    },
+    "repos": {
+      "title": "Repositories",
+      "sub": "Add public GitHub repositories. Their code is analyzed, never run.",
+      "url": "GitHub repository URL",
+      "add": "Add and analyze",
+      "adding": "Adding…",
+      "queued": "Repository added. Analysis has started.",
+      "empty": "No repositories yet. Add one above.",
+      "loadError": "Could not load this analysis.",
+      "retry": "Try again",
+      "analyzing": "Analysis in progress…",
+      "languages": "Languages",
+      "indicators": "Repository indicators",
+      "flag": {
+        "tests": "Tests",
+        "ci": "CI",
+        "lint": "Lint config",
+        "readme": "README",
+        "license": "License"
+      },
+      "yes": "present",
+      "no": "missing",
+      "commits": "Commits",
+      "authors": "Authors",
+      "span": "History span",
+      "days": "{n} days",
+      "files": "Files",
+      "architecture": "Architecture",
+      "complexity": "Complexity",
+      "practices": "Best practices",
+      "observed": "Observed",
+      "notObserved": "Not observed",
+      "tutorial": "Tutorial likelihood",
+      "tutorialWarn": "This repo looks like a tutorial or a fork, so it does not verify skills."
+    },
+    "jobs": {
+      "title": "Recommended jobs",
+      "sub": "Open postings ranked by how well your verified and claimed skills fit.",
+      "notVerified": "Your profile is not verified yet.",
+      "empty": "No open jobs match right now.",
+      "remote": "Remote",
+      "tier": {
+        "junior": "Junior",
+        "mid": "Mid"
+      },
+      "score": "Match score",
+      "matched": "Matched skills",
+      "missing": "Missing skills",
+      "details": "Match details"
+    },
+    "match": {
+      "title": "Match detail",
+      "back": "Back to jobs",
+      "scoring": "Scoring this match. This can take a few seconds.",
+      "scoreFailed": "Scoring failed.",
+      "retry": "Try again",
+      "scoreLabel": "Score {score} out of 100",
+      "scoreBar": "Match score",
+      "breakdown": "Score breakdown",
+      "breakdownHint": "Score = required skills × 70 + optional skills × 15 + experience tier × 15. A reviewer may adjust it by up to 10 points.",
+      "term": "Term",
+      "coverage": "Coverage",
+      "points": "Points",
+      "terms": {
+        "required": "Required skills",
+        "optional": "Optional skills",
+        "tier": "Experience tier"
+      },
+      "required": "Required skills",
+      "optional": "Optional skills",
+      "none": "None listed.",
+      "level": {
+        "repo": "repo",
+        "assessment": "assessment",
+        "cv": "CV",
+        "none": "missing"
+      },
+      "feedback": "Feedback",
+      "strengths": "Strengths",
+      "missingSkills": "Missing skills",
+      "suggestions": "Suggestions",
+      "noFeedback": "No written feedback for this match.",
+      "gaps": "Gaps in your CV",
+      "apply": "Apply to this job",
+      "applying": "Applying…",
+      "applied": "Application sent.",
+      "alreadyApplied": "You already applied to this job.",
+      "viewApplications": "View applications"
+    },
+    "applications": {
+      "title": "Applications",
+      "empty": "You have not applied yet.",
+      "browse": "Browse recommended jobs",
+      "score": "Match score",
+      "viewMatch": "Match details",
+      "withdraw": "Withdraw",
+      "withdrawing": "Withdrawing…",
+      "status": {
+        "submitted": "Submitted",
+        "reviewing": "Reviewing",
+        "interview": "Interview",
+        "rejected": "Rejected",
+        "accepted": "Accepted",
+        "withdrawn": "Withdrawn"
+      }
+    },
+    "invitations": {
+      "title": "Invitations",
+      "sub": "Recruiters who want you to apply.",
+      "empty": "No invitations yet. Turn on \"open to opportunities\" in your profile.",
+      "apply": "View and apply",
+      "decline": "Decline",
+      "declining": "Declining…",
+      "status": {
+        "sent": "Invited",
+        "accepted": "Applied",
+        "declined": "Declined"
+      }
+    },
+    "connections": {
+      "title": "Connections",
+      "sub": "People in your network.",
+      "incoming": "Incoming requests",
+      "outgoing": "Sent requests",
+      "connections": "Connections",
+      "noIncoming": "No incoming requests.",
+      "noOutgoing": "No pending sent requests.",
+      "noConnections": "No connections yet.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "cancel": "Cancel request",
+      "remove": "Remove",
+      "anonymous": "Unnamed"
+    },
+    "years": "{n}y"
   }
 }

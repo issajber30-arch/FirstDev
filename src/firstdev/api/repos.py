@@ -12,7 +12,10 @@ from firstdev.db import get_db
 from firstdev.demo import quota
 from firstdev.github import InvalidRepoUrl, parse_repo_url
 from firstdev.jobs import enqueue
+from firstdev.matching.profile import compute_skills, is_verified
 from firstdev.models import (
+    CvDocument,
+    CvStatus,
     DeveloperProfile,
     Job,
     JobKind,
@@ -156,3 +159,68 @@ def get_analysis(
         if analysis
         else None,
     )
+
+
+class OverviewRepo(BaseModel):
+    id: str
+    owner: str
+    name: str
+    status: JobStatus | None
+    job_id: str | None
+
+
+class OverviewCv(BaseModel):
+    id: str
+    status: CvStatus
+    job_id: str | None
+
+
+class OverviewOut(BaseModel):
+    """What the dashboard needs in one read: the latest CV, the repos and the merged skills."""
+
+    verified: bool
+    cv: OverviewCv | None
+    repos: list[OverviewRepo]
+    skills: list[dict]  # [{skill, level: repo|assessment|cv, years, sources}]
+
+
+@router.get("/profiles/me/overview", response_model=OverviewOut)
+def overview(
+    user: User = Depends(auth.current_user),
+    profile: DeveloperProfile = Depends(current_profile),
+    db: Session = Depends(get_db),
+) -> OverviewOut:
+    doc = db.scalar(
+        select(CvDocument)
+        .where(CvDocument.profile_id == profile.user_id)
+        .order_by(CvDocument.created_at.desc())
+        .limit(1)
+    )
+    cv = None
+    if doc is not None:
+        cv_job = db.scalar(
+            select(Job.id)
+            .where(
+                Job.user_id == user.id,
+                Job.kind == JobKind.cv_parse,
+                Job.payload["cv_document_id"].as_string() == doc.id,
+            )
+            .order_by(Job.created_at.desc())
+            .limit(1)
+        )
+        cv = OverviewCv(id=doc.id, status=doc.status, job_id=cv_job)
+    repos = []
+    for r in db.scalars(
+        select(Repository)
+        .where(Repository.profile_id == profile.user_id)
+        .order_by(Repository.created_at.desc())
+    ):
+        j = _latest_job(db, user, r.id)
+        repos.append(
+            OverviewRepo(
+                id=r.id, owner=r.owner, name=r.name,
+                status=j.status if j else None, job_id=j.id if j else None,
+            )
+        )  # fmt: skip
+    skills, _ = compute_skills(db, profile, datetime.now(UTC))  # read-only: no write on GET
+    return OverviewOut(verified=is_verified(db, profile), cv=cv, repos=repos, skills=skills)

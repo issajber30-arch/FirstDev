@@ -34,7 +34,8 @@ function csrfToken(): string | undefined {
 
 async function send(method: string, path: string, body?: unknown): Promise<Response> {
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const form = body instanceof FormData; // multipart: the browser sets the boundary header
+  if (body !== undefined && !form) headers["Content-Type"] = "application/json";
   if (UNSAFE.has(method)) {
     const t = csrfToken();
     if (t) headers["X-CSRF-Token"] = t;
@@ -43,7 +44,7 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
     method,
     headers,
     credentials: "same-origin",
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : form ? body : JSON.stringify(body),
   });
 }
 

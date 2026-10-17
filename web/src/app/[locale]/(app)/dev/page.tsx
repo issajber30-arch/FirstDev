@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
-import { DashboardStub } from "@/components/app/DashboardStub";
+import { Dashboard } from "@/components/dev/Dashboard";
 
 export default function Page() {
-  return <DashboardStub />;
+  return <Dashboard />;
 }

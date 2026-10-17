@@ -211,6 +211,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/profiles/me/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_profiles_me_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/postings": {
         parameters: {
             query?: never;
@@ -1056,6 +1073,41 @@ export interface components {
             explained: boolean;
             /** Gaps */
             gaps: string[];
+        };
+        /** OverviewCv */
+        OverviewCv: {
+            /** Id */
+            id: string;
+            status: components["schemas"]["CvStatus"];
+            /** Job Id */
+            job_id: string | null;
+        };
+        /**
+         * OverviewOut
+         * @description What the dashboard needs in one read: the latest CV, the repos and the merged skills.
+         */
+        OverviewOut: {
+            /** Verified */
+            verified: boolean;
+            cv: components["schemas"]["OverviewCv"] | null;
+            /** Repos */
+            repos: components["schemas"]["OverviewRepo"][];
+            /** Skills */
+            skills: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** OverviewRepo */
+        OverviewRepo: {
+            /** Id */
+            id: string;
+            /** Owner */
+            owner: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["JobStatus"] | null;
+            /** Job Id */
+            job_id: string | null;
         };
         /** PendingOut */
         PendingOut: {
@@ -1980,6 +2032,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_profiles_me_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewOut"];
                 };
             };
         };

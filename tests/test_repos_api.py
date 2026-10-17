@@ -151,3 +151,21 @@ def test_delete_me_cascades_repos_and_analyses(client, dev_headers, add, work, f
     )
     assert r.status_code == 204, r.text
     assert count(factory, Repository) == 0 and count(factory, RepoAnalysis) == 0
+
+
+def test_overview_empty_then_with_repo(client, dev_headers, add):
+    r = client.get("/profiles/me/overview", headers=dev_headers)
+    assert r.status_code == 200
+    assert r.json() == {"verified": False, "cv": None, "repos": [], "skills": []}
+    add()
+    got = client.get("/profiles/me/overview", headers=dev_headers).json()
+    assert [(x["owner"], x["name"], x["status"]) for x in got["repos"]] == [
+        ("octo", "hello", "queued")
+    ]
+    assert got["verified"] is False
+
+
+def test_overview_is_developer_only(client, register, login):
+    register("rec@example.com", role="recruiter")
+    rec_headers = login("rec@example.com")
+    assert client.get("/profiles/me/overview", headers=rec_headers).status_code == 404
