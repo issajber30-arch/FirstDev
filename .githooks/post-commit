@@ -1,0 +1,8 @@
+#!/bin/sh
+# Writes an Obsidian note for the commit. Must never fail the commit.
+subject=$(git log -1 --format=%s)
+body=$(printf '%s\n\nCommit: %s\n\nFiles:\n%s' \
+  "$(git log -1 --format=%B)" "$(git rev-parse --short HEAD)" \
+  "$(git show --name-only --format= HEAD)")
+uv run python scripts/obsidian_log.py --kind commit --title "$subject" --body "$body" || true
+exit 0

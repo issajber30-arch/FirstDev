@@ -1,0 +1,22 @@
+#!/bin/sh
+# Blocks secrets and .env, then lints. SKIP_RUFF=1 skips lint (used by hook tests).
+set -eu
+
+if git diff --cached --name-only | grep -qE '(^|/)\.env$'; then
+  echo "pre-commit: refusing to commit a .env file" >&2
+  exit 1
+fi
+
+PATTERN='sk-ant-[A-Za-z0-9_-]{10,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+# Track the current file from the diff headers so the report names it.
+if git diff --cached -U0 --no-color | awk -v pat="$PATTERN" '
+  /^\+\+\+ / { file = substr($0, 7); next }
+  /^\+/ { if ($0 ~ pat) { print "pre-commit: possible secret in " file > "/dev/stderr"; found = 1 } }
+  END { exit found ? 0 : 1 }'; then
+  echo "pre-commit: commit blocked" >&2
+  exit 1
+fi
+
+if [ "${SKIP_RUFF:-}" != "1" ]; then
+  uv run ruff check .
+fi
