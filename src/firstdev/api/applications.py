@@ -12,6 +12,7 @@ from firstdev.api.postings import current_recruiter, load_open_posting
 from firstdev.api.profiles import current_profile
 from firstdev.assessments.generate import create_assessment
 from firstdev.db import get_db
+from firstdev.demo import quota
 from firstdev.jobs import enqueue
 from firstdev.matching.profile import is_verified
 from firstdev.models import (
@@ -119,6 +120,7 @@ def apply(
     posting = load_open_posting(db, posting_id, user)
     if not is_verified(db, profile):
         raise HTTPException(403, VERIFY_MESSAGE)
+    quota.check(db, user, "score_pair")  # applying queues an explaining score
     since = datetime.now(UTC) - timedelta(hours=24)
     recent = db.scalar(
         select(func.count())

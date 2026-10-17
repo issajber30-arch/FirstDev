@@ -12,6 +12,7 @@ from firstdev.config import get_settings
 from firstdev.db import get_db
 from firstdev.models import DeveloperProfile, RefreshToken, Role, User
 from firstdev.security.sanitize import EmptyInput, InputTooLarge, sanitize_text
+from firstdev.worlds import delete_worlds
 
 router = APIRouter()
 
@@ -147,12 +148,20 @@ def me(user: User = Depends(auth.current_user)) -> User:
 
 @router.delete("/me", status_code=204)
 def delete_me(
-    body: DeleteMeIn,
     request: Request,
     response: Response,
+    body: DeleteMeIn | None = None,
     user: User = Depends(auth.current_user),
     db: Session = Depends(get_db),
 ) -> None:
+    if user.world_id is not None:
+        # Sandbox visitors have no password (the persona hashes are unusable) and nothing to
+        # protect: deleting ends the whole throwaway world, personas and all.
+        delete_worlds(db, {user.world_id})
+        sessions.clear_cookies(response)
+        return
+    if body is None:
+        raise HTTPException(422, "password required")
     # A stolen token must not be enough to wipe the account, so the password is re-checked
     # (and rate-limited like login).
     keys = auth.limiter_keys(request, user.email)

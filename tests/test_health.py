@@ -15,6 +15,7 @@ def test_docs_disabled_in_prod(monkeypatch):
     monkeypatch.setenv("FIRSTDEV_ENV", "prod")
     monkeypatch.setenv("FIRSTDEV_PROXY_SECRET", "p" * 32)  # prod requires it
     monkeypatch.setenv("FIRSTDEV_COOKIE_SECURE", "true")
+    monkeypatch.setenv("FIRSTDEV_TURNSTILE_DISABLED", "false")  # refused in prod
     get_settings.cache_clear()
     try:
         client = TestClient(create_app())

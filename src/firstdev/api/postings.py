@@ -143,6 +143,8 @@ def create_posting(
 ) -> PostingOut:
     posting = JobPosting(recruiter_id=user.id, status=PostingStatus(body.status or "draft"))
     _apply(posting, body)
+    if user.world_id is not None:  # sandbox: automatic assessments would spend LLM budget
+        posting.auto_assessment = False
     db.add(posting)
     db.flush()
     if posting.status == PostingStatus.open:
@@ -193,6 +195,8 @@ def update_posting(
         raise HTTPException(409, "an open posting cannot go back to draft")
     was_open, before = posting.status == PostingStatus.open, posting_fingerprint(posting)
     _apply(posting, body)
+    if user.world_id is not None:
+        posting.auto_assessment = False
     if body.status == "open":
         posting.status = PostingStatus.open
     if posting.status == PostingStatus.open and (

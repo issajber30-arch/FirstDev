@@ -12,12 +12,14 @@ from firstdev.errors import TransientError
 from firstdev.github import GitHubError
 from firstdev.llm import LLM, LLMError
 from firstdev.models import Job, JobKind, JobStatus, User
+from firstdev.worlds import sweep_expired
 
 log = logging.getLogger("firstdev.jobs")
 
 MAX_ATTEMPTS = 3
 BACKOFF_BASE_SECONDS = 30
 MAX_BACKOFF_SECONDS = 60 * 60
+SWEEP_INTERVAL_SECONDS = 10 * 60  # expired sandbox worlds are deleted this often
 Handler = Callable[[Session, Job, LLM], None]
 # Pipelines (M3/M4) register themselves here.
 HANDLERS: dict[JobKind, Handler] = {}
@@ -175,11 +177,19 @@ def worker_main(
     signal.signal(signal.SIGTERM, _stop)
     handlers = HANDLERS if handlers is None else handlers
     i = 0
-    while not stop:
+    last_sweep = -SWEEP_INTERVAL_SECONDS  # time-based (not per iteration): runs on startup, then
+    while not stop:  # every 10 minutes whether the queue is busy or idle
         if i % 30 == 0:
             with db_factory() as db:
                 requeue_stale(db)
         i += 1
+        if time.monotonic() - last_sweep >= SWEEP_INTERVAL_SECONDS:
+            last_sweep = time.monotonic()
+            try:
+                with db_factory() as db:
+                    sweep_expired(db)
+            except Exception:  # a failed sweep is retried next interval; never kill the worker
+                log.exception("sandbox sweep failed")
         try:
             worked = run_once(db_factory, handlers, llm)
         except Exception:  # e.g. SQLite "database is locked": keep the worker alive

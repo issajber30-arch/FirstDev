@@ -1,0 +1,1941 @@
+{
+  "_copyright": "Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.",
+  "_note": "Hand-written demo world for sandboxes. Cloned per visitor by firstdev.demo.clone; all people, companies and repositories are fictional.",
+  "recruiter": {
+    "name": "Noa Levi — Talent Lead, Helix Labs (Tel Aviv)"
+  },
+  "visitor": {
+    "developer_template": "strong",
+    "developer_name": "You (Demo Developer)",
+    "recruiter_name": "You (Demo Recruiter)"
+  },
+  "postings": [
+    {
+      "key": "backend",
+      "title": "Junior Backend Developer (Python)",
+      "description": "Helix Labs builds lab-automation software used by research hospitals across Israel. You will join the platform team that owns our FastAPI services and PostgreSQL data layer, ship small features end to end, and learn how a production API is tested, deployed and monitored. We value clear code, tests and curiosity over years of experience.",
+      "required_skills": [
+        "python",
+        "fastapi",
+        "postgresql"
+      ],
+      "optional_skills": [
+        "docker",
+        "git"
+      ],
+      "tier": "junior",
+      "salary_min": 16000,
+      "salary_max": 22000,
+      "currency": "ILS",
+      "location": "Tel Aviv",
+      "remote": false
+    },
+    {
+      "key": "frontend",
+      "title": "Junior Frontend Developer (React)",
+      "description": "Join the team that builds the Helix Labs web console, the screen scientists use all day to schedule runs and review results. You will build accessible React components in TypeScript, work from designs, and write component tests. Hebrew and English interfaces (right-to-left support) are part of everyday work.",
+      "required_skills": [
+        "react",
+        "typescript",
+        "javascript"
+      ],
+      "optional_skills": [
+        "css",
+        "jest",
+        "git"
+      ],
+      "tier": "junior",
+      "salary_min": 15000,
+      "salary_max": 20000,
+      "currency": "ILS",
+      "location": "Tel Aviv",
+      "remote": true
+    },
+    {
+      "key": "fullstack",
+      "title": "Full-stack Developer (Node.js + React)",
+      "description": "We are looking for a developer with a few years of experience to own features across our Node.js integration services and the React console. You will design APIs, containerize and ship them with Docker, and mentor the juniors on the team. Experience with queues, PostgreSQL or AWS is a plus.",
+      "required_skills": [
+        "node.js",
+        "react",
+        "docker"
+      ],
+      "optional_skills": [
+        "postgresql",
+        "typescript",
+        "aws"
+      ],
+      "tier": "mid",
+      "salary_min": 28000,
+      "salary_max": 38000,
+      "currency": "ILS",
+      "location": "Tel Aviv",
+      "remote": true
+    },
+    {
+      "key": "data",
+      "title": "Junior Data Analyst (Python + SQL)",
+      "description": "Help our scientists make sense of instrument data. You will clean and analyze datasets with Python and pandas, write SQL against our reporting database, and build dashboards and short notebooks that explain what the numbers mean. Career changers with a strong portfolio are very welcome.",
+      "required_skills": [
+        "python",
+        "pandas",
+        "sql"
+      ],
+      "optional_skills": [
+        "numpy",
+        "postgresql"
+      ],
+      "tier": "junior",
+      "salary_min": 14000,
+      "salary_max": 19000,
+      "currency": "ILS",
+      "location": "Tel Aviv",
+      "remote": false
+    }
+  ],
+  "developers": [
+    {
+      "key": "strong",
+      "persona": "Strong repo-proven",
+      "display_name": "Yael Cohen",
+      "headline": "Junior backend developer: Python, FastAPI and PostgreSQL, with tested projects on GitHub",
+      "bio": "Computer science graduate (Tel Aviv University) with a year at a fintech startup. I build small, well-tested APIs and write down why I made each design choice.",
+      "location": "Tel Aviv",
+      "tier": "junior",
+      "open_to_opportunities": true,
+      "cv_text": "Yael Cohen\nBackend Developer | Tel Aviv\n\nSUMMARY\nBackend developer with one year of professional experience building REST APIs in Python. I care about tests, clear data models and boring, reliable deployments.\n\nEXPERIENCE\nJunior Backend Developer, Fintrack Ltd., Tel Aviv (2025-07 to present)\n- Built and maintained FastAPI services for invoicing, backed by PostgreSQL.\n- Wrote pytest suites and a GitHub Actions pipeline that cut release time from two hours to twenty minutes.\nBackend Intern, Fintrack Ltd., Tel Aviv (2024-10 to 2025-06)\n- Migrated reporting scripts to SQLAlchemy and added Docker setups for local development.\n\nEDUCATION\nB.Sc. Computer Science, Tel Aviv University (2021-2024)\n\nSKILLS\nPython (3 years), FastAPI, PostgreSQL, SQLAlchemy, Docker, pytest, Git, Linux\n\nLANGUAGES\nHebrew (native), English (fluent)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "Python",
+            "category": "language",
+            "years": 3.0,
+            "evidence_quote": "Python (3 years)"
+          },
+          {
+            "name": "FastAPI",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "Built and maintained FastAPI services for invoicing, backed by PostgreSQL."
+          },
+          {
+            "name": "PostgreSQL",
+            "category": "database",
+            "years": 1.0,
+            "evidence_quote": "backed by PostgreSQL"
+          },
+          {
+            "name": "SQLAlchemy",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "Migrated reporting scripts to SQLAlchemy"
+          },
+          {
+            "name": "Docker",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "added Docker setups for local development"
+          },
+          {
+            "name": "pytest",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "Wrote pytest suites"
+          },
+          {
+            "name": "Git",
+            "category": "tool",
+            "years": null,
+            "evidence_quote": "Git, Linux"
+          },
+          {
+            "name": "Linux",
+            "category": "tool",
+            "years": null,
+            "evidence_quote": "Git, Linux"
+          }
+        ],
+        "experience": [
+          {
+            "title": "Junior Backend Developer",
+            "company": "Fintrack Ltd.",
+            "start": "2025-07",
+            "end": "present",
+            "description": "Built and maintained FastAPI services for invoicing; pytest suites and a GitHub Actions pipeline.",
+            "evidence_quote": "Junior Backend Developer, Fintrack Ltd., Tel Aviv (2025-07 to present)"
+          },
+          {
+            "title": "Backend Intern",
+            "company": "Fintrack Ltd.",
+            "start": "2024-10",
+            "end": "2025-06",
+            "description": "Migrated reporting scripts to SQLAlchemy and added Docker setups.",
+            "evidence_quote": "Backend Intern, Fintrack Ltd., Tel Aviv (2024-10 to 2025-06)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Tel Aviv University",
+            "degree": "B.Sc.",
+            "field": "Computer Science",
+            "start": "2021",
+            "end": "2024",
+            "evidence_quote": "B.Sc. Computer Science, Tel Aviv University (2021-2024)"
+          }
+        ],
+        "languages_spoken": [
+          "Hebrew",
+          "English"
+        ],
+        "summary": "Backend developer with one year of professional experience building REST APIs in Python."
+      },
+      "repos": [
+        {
+          "owner": "yaelcohen-dev",
+          "name": "ledger-api",
+          "is_fork": false,
+          "stars": 14,
+          "pushed_days_ago": 9,
+          "commit_sha": "e45c5cb3aeeb959eb22dd18bb122e0455df7084b",
+          "files": [
+            "README.md",
+            "LICENSE",
+            "Dockerfile",
+            "pyproject.toml",
+            ".github/workflows/ci.yml",
+            "app/main.py",
+            "app/models.py",
+            "app/routes/invoices.py",
+            "app/db.py",
+            "tests/test_invoices.py",
+            "migrations/env.py"
+          ],
+          "metrics": {
+            "languages": {
+              "Python": 61440,
+              "Dockerfile": 1180,
+              "Shell": 900
+            },
+            "total_files": 48,
+            "files_by_extension": {
+              ".py": 31,
+              ".md": 3,
+              ".toml": 2,
+              ".yml": 3,
+              ".sql": 4
+            },
+            "dependencies": [
+              "fastapi",
+              "sqlalchemy",
+              "pydantic",
+              "psycopg2-binary",
+              "pytest",
+              "alembic"
+            ],
+            "has_tests": true,
+            "has_ci": true,
+            "has_lint_config": true,
+            "has_readme": true,
+            "has_license": true,
+            "fetched_files": 11,
+            "fetched_lines": 1420,
+            "commit_count": 87,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 41,
+            "first_commit": "2025-11-03T08:12:00+00:00",
+            "last_commit": "2026-10-08T17:40:00+00:00",
+            "span_days": 339,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A FastAPI invoicing service with a clean split between routes, models and the database layer. PostgreSQL access goes through SQLAlchemy with Alembic migrations, and the test suite runs against a throwaway database in CI.",
+            "complexity": 4,
+            "best_practices": [
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "tests/test_invoices.py"
+              },
+              {
+                "practice": "Continuous integration",
+                "observed": true,
+                "evidence_path": ".github/workflows/ci.yml"
+              },
+              {
+                "practice": "Database migrations",
+                "observed": true,
+                "evidence_path": "migrations/env.py"
+              },
+              {
+                "practice": "Containerized setup",
+                "observed": true,
+                "evidence_path": "Dockerfile"
+              }
+            ],
+            "tutorial_likelihood": 0.05,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Clear separation of routes, models and persistence",
+              "Tests and CI from the first weeks of the project",
+              "Migrations instead of ad-hoc schema changes"
+            ],
+            "concerns": [
+              "No structured logging yet",
+              "Authentication is stubbed out"
+            ]
+          },
+          "tutorial_likelihood": 0.05
+        },
+        {
+          "owner": "yaelcohen-dev",
+          "name": "tlv-bike-dock-monitor",
+          "is_fork": false,
+          "stars": 3,
+          "pushed_days_ago": 60,
+          "commit_sha": "9b726f93985fbe4688edb7ddb6fab7ef30517ba4",
+          "files": [
+            "README.md",
+            "requirements.txt",
+            "monitor/app.py",
+            "monitor/poller.py",
+            "tests/test_poller.py"
+          ],
+          "metrics": {
+            "languages": {
+              "Python": 22528,
+              "HTML": 4100
+            },
+            "total_files": 19,
+            "files_by_extension": {
+              ".py": 9,
+              ".html": 4,
+              ".md": 1,
+              ".txt": 1
+            },
+            "dependencies": [
+              "flask",
+              "redis",
+              "pytest"
+            ],
+            "has_tests": true,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 5,
+            "fetched_lines": 610,
+            "commit_count": 34,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 19,
+            "first_commit": "2025-03-12T19:05:00+00:00",
+            "last_commit": "2025-08-30T20:15:00+00:00",
+            "span_days": 171,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A small Flask dashboard that polls a public bike-share feed into Redis and shows which docks are empty. Simple but complete, with tests around the poller.",
+            "complexity": 3,
+            "best_practices": [
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "tests/test_poller.py"
+              },
+              {
+                "practice": "Pinned dependencies",
+                "observed": true,
+                "evidence_path": "requirements.txt"
+              }
+            ],
+            "tutorial_likelihood": 0.1,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Original idea with a real data source",
+              "Background polling kept separate from the web layer"
+            ],
+            "concerns": [
+              "No CI configuration"
+            ]
+          },
+          "tutorial_likelihood": 0.1
+        }
+      ],
+      "assessment": null
+    },
+    {
+      "key": "cvonly",
+      "persona": "CV-only claims",
+      "display_name": "Omer Barak",
+      "headline": "Full-stack developer with React, TypeScript and Node.js on the CV (Hebrew CV)",
+      "bio": "Two years building marketing sites at a small studio in Ramat Gan. Looking for a product team where I can grow into full-stack work.",
+      "location": "Ramat Gan",
+      "tier": "junior",
+      "open_to_opportunities": true,
+      "cv_text": "עומר בראק\nמפתח Full-stack | רמת גן\n\nתקציר\nמפתח עם שנתיים ניסיון בבניית אתרים באמצעות ריאקט ו-TypeScript. עבדתי גם עם נוד ו-MongoDB בפרויקטים קטנים.\n\nניסיון\nמפתח Frontend, סטודיו פיקסל, רמת גן (2024-03 עד היום)\n- בניית דפי נחיתה ואתרי תדמית בריאקט ו-TypeScript.\n- עבודה עם גיט ו-Docker בסביבת פיתוח משותפת.\nמתמחה, סטודיו פיקסל, רמת גן (2023-06 עד 2024-02)\n- תחזוקת אתרי וורדפרס ושיפור ביצועי טעינה.\n\nהשכלה\nתואר ראשון במדעי המחשב, המכללה למינהל (2020-2023)\n\nכישורים\nריאקט, TypeScript, נוד, MongoDB, גיט, Docker, HTML, CSS\n\nשפות\nעברית (שפת אם), אנגלית (טובה מאוד)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "ריאקט",
+            "category": "framework",
+            "years": 2.0,
+            "evidence_quote": "בניית דפי נחיתה ואתרי תדמית בריאקט ו-TypeScript."
+          },
+          {
+            "name": "TypeScript",
+            "category": "language",
+            "years": 2.0,
+            "evidence_quote": "בריאקט ו-TypeScript"
+          },
+          {
+            "name": "נוד",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "עבדתי גם עם נוד ו-MongoDB בפרויקטים קטנים."
+          },
+          {
+            "name": "MongoDB",
+            "category": "database",
+            "years": 1.0,
+            "evidence_quote": "נוד ו-MongoDB"
+          },
+          {
+            "name": "גיט",
+            "category": "tool",
+            "years": 2.0,
+            "evidence_quote": "עבודה עם גיט ו-Docker בסביבת פיתוח משותפת."
+          },
+          {
+            "name": "Docker",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "גיט ו-Docker"
+          },
+          {
+            "name": "HTML",
+            "category": "language",
+            "years": 3.0,
+            "evidence_quote": "TypeScript, נוד, MongoDB, גיט, Docker, HTML, CSS"
+          },
+          {
+            "name": "CSS",
+            "category": "language",
+            "years": 3.0,
+            "evidence_quote": "TypeScript, נוד, MongoDB, גיט, Docker, HTML, CSS"
+          }
+        ],
+        "experience": [
+          {
+            "title": "מפתח Frontend",
+            "company": "סטודיו פיקסל",
+            "start": "2024-03",
+            "end": "present",
+            "description": "בניית דפי נחיתה ואתרי תדמית בריאקט ו-TypeScript.",
+            "evidence_quote": "מפתח Frontend, סטודיו פיקסל, רמת גן (2024-03 עד היום)"
+          },
+          {
+            "title": "מתמחה",
+            "company": "סטודיו פיקסל",
+            "start": "2023-06",
+            "end": "2024-02",
+            "description": "תחזוקת אתרי וורדפרס ושיפור ביצועי טעינה.",
+            "evidence_quote": "מתמחה, סטודיו פיקסל, רמת גן (2023-06 עד 2024-02)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "המכללה למינהל",
+            "degree": "תואר ראשון",
+            "field": "מדעי המחשב",
+            "start": "2020",
+            "end": "2023",
+            "evidence_quote": "תואר ראשון במדעי המחשב, המכללה למינהל (2020-2023)"
+          }
+        ],
+        "languages_spoken": [
+          "עברית",
+          "אנגלית"
+        ],
+        "summary": "מפתח עם שנתיים ניסיון בבניית אתרים באמצעות ריאקט ו-TypeScript."
+      },
+      "repos": [
+        {
+          "owner": "omerbarak-dev",
+          "name": "landing-page-starter",
+          "is_fork": false,
+          "stars": 0,
+          "pushed_days_ago": 210,
+          "commit_sha": "bed01cfa597646ec67c4bef45c08b4857983dd31",
+          "files": [
+            "README.md",
+            "index.html",
+            "styles.css",
+            "script.js"
+          ],
+          "metrics": {
+            "languages": {
+              "HTML": 1650,
+              "CSS": 1204,
+              "JavaScript": 900
+            },
+            "total_files": 4,
+            "files_by_extension": {
+              ".html": 1,
+              ".css": 1,
+              ".js": 1,
+              ".md": 1
+            },
+            "dependencies": [],
+            "has_tests": false,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 4,
+            "fetched_lines": 140,
+            "commit_count": 6,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 3,
+            "first_commit": "2026-02-01T10:00:00+00:00",
+            "last_commit": "2026-02-14T09:30:00+00:00",
+            "span_days": 13,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.1,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A single static landing page with a stylesheet and a short script. Tidy, but too small to show framework, testing or backend skills.",
+            "complexity": 1,
+            "best_practices": [
+              {
+                "practice": "README present",
+                "observed": true,
+                "evidence_path": "README.md"
+              }
+            ],
+            "tutorial_likelihood": 0.5,
+            "tutorial_reasons": [
+              "Very small and generic structure"
+            ],
+            "strengths": [
+              "Clean, readable HTML and CSS"
+            ],
+            "concerns": [
+              "No framework code",
+              "Nothing here demonstrates the React or Node.js skills on the CV"
+            ]
+          },
+          "tutorial_likelihood": 0.3
+        }
+      ],
+      "assessment": null
+    },
+    {
+      "key": "tutorial",
+      "persona": "Tutorial-heavy",
+      "display_name": "Tomer Shapira",
+      "headline": "Bootcamp graduate learning React and Node.js",
+      "bio": "Career starter from Haifa. I complete a lot of online courses; my next goal is a project of my own design.",
+      "location": "Haifa",
+      "tier": "junior",
+      "open_to_opportunities": true,
+      "cv_text": "Tomer Shapira\nJunior Web Developer | Haifa\n\nSUMMARY\nBootcamp graduate looking for a first role as a web developer. I enjoy building small apps with React and Node.js and learn quickly from documentation and courses.\n\nEXPERIENCE\nJunior Web Developer (Freelance), Haifa (2025-09 to present)\n- Built brochure websites for local businesses using HTML, CSS and JavaScript.\nSales Associate, Mega Sport, Haifa (2023-01 to 2025-08)\n- Advised customers and managed the weekly inventory count.\n\nEDUCATION\nFull-stack Web Development Bootcamp, Tech Career Haifa (2025)\n\nSKILLS\nJavaScript, React, Node.js, Express, MongoDB, HTML, CSS, Git\n\nLANGUAGES\nHebrew (native), English (good)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "JavaScript",
+            "category": "language",
+            "years": 1.0,
+            "evidence_quote": "JavaScript, React, Node.js, Express, MongoDB, HTML, CSS, Git"
+          },
+          {
+            "name": "React",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "small apps with React and Node.js"
+          },
+          {
+            "name": "Node.js",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "small apps with React and Node.js"
+          },
+          {
+            "name": "Express",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "Express, MongoDB"
+          },
+          {
+            "name": "MongoDB",
+            "category": "database",
+            "years": 1.0,
+            "evidence_quote": "Express, MongoDB"
+          },
+          {
+            "name": "HTML",
+            "category": "language",
+            "years": 1.0,
+            "evidence_quote": "using HTML, CSS and JavaScript"
+          },
+          {
+            "name": "CSS",
+            "category": "language",
+            "years": 1.0,
+            "evidence_quote": "using HTML, CSS and JavaScript"
+          },
+          {
+            "name": "Git",
+            "category": "tool",
+            "years": null,
+            "evidence_quote": "HTML, CSS, Git"
+          }
+        ],
+        "experience": [
+          {
+            "title": "Junior Web Developer (Freelance)",
+            "company": "Freelance",
+            "start": "2025-09",
+            "end": "present",
+            "description": "Built brochure websites for local businesses using HTML, CSS and JavaScript.",
+            "evidence_quote": "Junior Web Developer (Freelance), Haifa (2025-09 to present)"
+          },
+          {
+            "title": "Sales Associate",
+            "company": "Mega Sport",
+            "start": "2023-01",
+            "end": "2025-08",
+            "description": "Advised customers and managed the weekly inventory count.",
+            "evidence_quote": "Sales Associate, Mega Sport, Haifa (2023-01 to 2025-08)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Tech Career Haifa",
+            "degree": "Bootcamp",
+            "field": "Full-stack Web Development",
+            "start": "2025",
+            "end": "2025",
+            "evidence_quote": "Full-stack Web Development Bootcamp, Tech Career Haifa (2025)"
+          }
+        ],
+        "languages_spoken": [
+          "Hebrew",
+          "English"
+        ],
+        "summary": "Bootcamp graduate looking for a first role as a web developer."
+      },
+      "repos": [
+        {
+          "owner": "tomershapira-dev",
+          "name": "udemy-react-todo-app",
+          "is_fork": true,
+          "stars": 0,
+          "pushed_days_ago": 120,
+          "commit_sha": "a341dc44b065ad7cff7f558c4e263fc4915e178c",
+          "files": [
+            "README.md",
+            "package.json",
+            "src/App.js",
+            "src/components/TodoList.js",
+            "src/components/TodoItem.js",
+            "src/index.js"
+          ],
+          "metrics": {
+            "languages": {
+              "JavaScript": 30720,
+              "CSS": 4300,
+              "HTML": 1100
+            },
+            "total_files": 21,
+            "files_by_extension": {
+              ".js": 9,
+              ".css": 3,
+              ".json": 2,
+              ".html": 1,
+              ".md": 1
+            },
+            "dependencies": [
+              "react",
+              "react-dom"
+            ],
+            "has_tests": false,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 6,
+            "fetched_lines": 380,
+            "commit_count": 3,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 1,
+            "first_commit": "2026-06-02T14:00:00+00:00",
+            "last_commit": "2026-06-02T14:20:00+00:00",
+            "span_days": 0,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": true,
+              "name_match": true,
+              "bulk_initial_commit": false,
+              "few_commits": true
+            },
+            "heuristic_tutorial_score": 0.8,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A classic to-do list built step by step from an online React course. Structure, component names and styling match the usual course template.",
+            "complexity": 1,
+            "best_practices": [
+              {
+                "practice": "README present",
+                "observed": true,
+                "evidence_path": "README.md"
+              }
+            ],
+            "tutorial_likelihood": 0.9,
+            "tutorial_reasons": [
+              "Fork of a course repository",
+              "Name and structure match a course project",
+              "Whole history lands in three commits within twenty minutes"
+            ],
+            "strengths": [
+              "Components are small and readable"
+            ],
+            "concerns": [
+              "Nearly identical to the course template",
+              "No tests or original features"
+            ]
+          },
+          "tutorial_likelihood": 0.85
+        },
+        {
+          "owner": "tomershapira-dev",
+          "name": "portfolio-site",
+          "is_fork": false,
+          "stars": 1,
+          "pushed_days_ago": 40,
+          "commit_sha": "d8beadae88adbb315f70558863ac000243e7a068",
+          "files": [
+            "README.md",
+            "index.html",
+            "css/style.css",
+            "js/menu.js",
+            "images/hero.jpg"
+          ],
+          "metrics": {
+            "languages": {
+              "HTML": 6200,
+              "CSS": 4800,
+              "JavaScript": 1500
+            },
+            "total_files": 9,
+            "files_by_extension": {
+              ".html": 2,
+              ".css": 2,
+              ".js": 1,
+              ".jpg": 3,
+              ".md": 1
+            },
+            "dependencies": [],
+            "has_tests": false,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 4,
+            "fetched_lines": 420,
+            "commit_count": 17,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 8,
+            "first_commit": "2026-07-01T10:00:00+00:00",
+            "last_commit": "2026-08-27T18:45:00+00:00",
+            "span_days": 57,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A hand-written personal portfolio site in plain HTML and CSS with a small script for the mobile menu.",
+            "complexity": 2,
+            "best_practices": [
+              {
+                "practice": "README present",
+                "observed": true,
+                "evidence_path": "README.md"
+              }
+            ],
+            "tutorial_likelihood": 0.2,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Original design with responsive layout"
+            ],
+            "concerns": [
+              "Static content only"
+            ]
+          },
+          "tutorial_likelihood": 0.2
+        }
+      ],
+      "assessment": null
+    },
+    {
+      "key": "badge",
+      "persona": "Assessment badge holder",
+      "display_name": "Dana Mizrahi",
+      "headline": "Frontend developer: accessible React interfaces, verified by a React assessment",
+      "bio": "Two years of React at an e-learning company. I care about keyboard and screen-reader support and I like turning design tokens into code.",
+      "location": "Jerusalem",
+      "tier": "junior",
+      "open_to_opportunities": true,
+      "cv_text": "Dana Mizrahi\nFrontend Developer | Jerusalem\n\nSUMMARY\nFrontend developer focused on accessible interfaces. Two years of React and CSS at an e-learning company, and a small open-source tooling project in TypeScript.\n\nEXPERIENCE\nFrontend Developer, LearnLoop, Jerusalem (2024-09 to present)\n- Built the lesson player UI in React with keyboard navigation and screen-reader support.\n- Introduced a shared CSS token system used by four product teams.\nStudent Developer, Hebrew University IT, Jerusalem (2023-10 to 2024-08)\n- Maintained internal HTML and JavaScript pages for the registrar's office.\n\nEDUCATION\nB.A. Computer Science and Cognitive Science, Hebrew University of Jerusalem (2021-2024)\n\nSKILLS\nReact (2 years), TypeScript, JavaScript, CSS, HTML, Jest, Git\n\nLANGUAGES\nHebrew (native), English (fluent), Arabic (conversational)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "React",
+            "category": "framework",
+            "years": 2.0,
+            "evidence_quote": "React (2 years)"
+          },
+          {
+            "name": "TypeScript",
+            "category": "language",
+            "years": 1.0,
+            "evidence_quote": "a small open-source tooling project in TypeScript"
+          },
+          {
+            "name": "JavaScript",
+            "category": "language",
+            "years": 2.0,
+            "evidence_quote": "Maintained internal HTML and JavaScript pages"
+          },
+          {
+            "name": "CSS",
+            "category": "language",
+            "years": 2.0,
+            "evidence_quote": "Introduced a shared CSS token system used by four product teams."
+          },
+          {
+            "name": "HTML",
+            "category": "language",
+            "years": 2.0,
+            "evidence_quote": "Maintained internal HTML and JavaScript pages"
+          },
+          {
+            "name": "Jest",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "CSS, HTML, Jest, Git"
+          },
+          {
+            "name": "Git",
+            "category": "tool",
+            "years": null,
+            "evidence_quote": "CSS, HTML, Jest, Git"
+          }
+        ],
+        "experience": [
+          {
+            "title": "Frontend Developer",
+            "company": "LearnLoop",
+            "start": "2024-09",
+            "end": "present",
+            "description": "Built the lesson player UI in React with keyboard navigation and screen-reader support.",
+            "evidence_quote": "Frontend Developer, LearnLoop, Jerusalem (2024-09 to present)"
+          },
+          {
+            "title": "Student Developer",
+            "company": "Hebrew University IT",
+            "start": "2023-10",
+            "end": "2024-08",
+            "description": "Maintained internal HTML and JavaScript pages for the registrar's office.",
+            "evidence_quote": "Student Developer, Hebrew University IT, Jerusalem (2023-10 to 2024-08)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Hebrew University of Jerusalem",
+            "degree": "B.A.",
+            "field": "Computer Science and Cognitive Science",
+            "start": "2021",
+            "end": "2024",
+            "evidence_quote": "B.A. Computer Science and Cognitive Science, Hebrew University of Jerusalem (2021-2024)"
+          }
+        ],
+        "languages_spoken": [
+          "Hebrew",
+          "English",
+          "Arabic"
+        ],
+        "summary": "Frontend developer focused on accessible interfaces."
+      },
+      "repos": [
+        {
+          "owner": "danamizrahi-dev",
+          "name": "design-tokens-cli",
+          "is_fork": false,
+          "stars": 22,
+          "pushed_days_ago": 17,
+          "commit_sha": "f3e179dc0f058e90375f344e1940bf6912ba00ea",
+          "files": [
+            "README.md",
+            "LICENSE",
+            "package.json",
+            "tsconfig.json",
+            ".eslintrc.json",
+            ".github/workflows/test.yml",
+            "src/cli.ts",
+            "src/parse.ts",
+            "src/emit-css.ts",
+            "test/parse.test.ts"
+          ],
+          "metrics": {
+            "languages": {
+              "TypeScript": 28160,
+              "JavaScript": 3100,
+              "Shell": 600
+            },
+            "total_files": 33,
+            "files_by_extension": {
+              ".ts": 14,
+              ".json": 6,
+              ".md": 3,
+              ".js": 2,
+              ".yml": 1
+            },
+            "dependencies": [
+              "typescript",
+              "jest"
+            ],
+            "has_tests": true,
+            "has_ci": true,
+            "has_lint_config": true,
+            "has_readme": true,
+            "has_license": true,
+            "fetched_files": 10,
+            "fetched_lines": 1180,
+            "commit_count": 64,
+            "commits_note": "first page only (max 100)",
+            "author_count": 2,
+            "active_days": 27,
+            "first_commit": "2025-12-01T09:00:00+00:00",
+            "last_commit": "2026-09-30T12:10:00+00:00",
+            "span_days": 303,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A TypeScript command-line tool that converts a design-token JSON file into CSS custom properties. Small, focused modules for parsing and emitting, with unit tests and a CI workflow.",
+            "complexity": 3,
+            "best_practices": [
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "test/parse.test.ts"
+              },
+              {
+                "practice": "Continuous integration",
+                "observed": true,
+                "evidence_path": ".github/workflows/test.yml"
+              },
+              {
+                "practice": "Linting configured",
+                "observed": true,
+                "evidence_path": ".eslintrc.json"
+              },
+              {
+                "practice": "Typed codebase",
+                "observed": true,
+                "evidence_path": "tsconfig.json"
+              }
+            ],
+            "tutorial_likelihood": 0.05,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Focused modules with unit tests",
+              "Published with a clear README and a license",
+              "A second contributor sent a pull request"
+            ],
+            "concerns": [
+              "No end-to-end test of the CLI binary"
+            ]
+          },
+          "tutorial_likelihood": 0.05
+        },
+        {
+          "owner": "danamizrahi-dev",
+          "name": "a11y-checklist",
+          "is_fork": false,
+          "stars": 6,
+          "pushed_days_ago": 95,
+          "commit_sha": "56993266a0f6b67f35ae33e70f1a674d2188db80",
+          "files": [
+            "README.md",
+            "index.html",
+            "checklist.js",
+            "styles.css"
+          ],
+          "metrics": {
+            "languages": {
+              "HTML": 5400,
+              "JavaScript": 1800,
+              "CSS": 1500
+            },
+            "total_files": 6,
+            "files_by_extension": {
+              ".html": 1,
+              ".js": 1,
+              ".css": 1,
+              ".md": 2,
+              ".json": 1
+            },
+            "dependencies": [],
+            "has_tests": false,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": true,
+            "fetched_files": 4,
+            "fetched_lines": 300,
+            "commit_count": 22,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 9,
+            "first_commit": "2026-03-04T17:00:00+00:00",
+            "last_commit": "2026-06-10T11:00:00+00:00",
+            "span_days": 98,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A single-page interactive accessibility checklist with state saved in localStorage. Semantic HTML and keyboard-friendly controls.",
+            "complexity": 2,
+            "best_practices": [
+              {
+                "practice": "Semantic HTML",
+                "observed": true,
+                "evidence_path": "index.html"
+              }
+            ],
+            "tutorial_likelihood": 0.1,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Semantic, keyboard-friendly markup"
+            ],
+            "concerns": [
+              "No automated tests"
+            ]
+          },
+          "tutorial_likelihood": 0.1
+        }
+      ],
+      "assessment": {
+        "skills": [
+          "react"
+        ],
+        "taken_days_ago": 12,
+        "minutes_taken": 14,
+        "questions": [
+          {
+            "kind": "mcq",
+            "skill": "react",
+            "difficulty": 2,
+            "prompt": "A click handler calls setCount(count + 1) twice in a row. What is count after one click, starting from 0?",
+            "options": [
+              "2",
+              "1",
+              "0",
+              "It depends on the browser"
+            ],
+            "correct_index": 1,
+            "explanation": "Both calls read the same render's value of count, so each queues 'set to 1'. Use the functional form setCount(c => c + 1) to increment twice.",
+            "answer_index": 1,
+            "points": 1.0
+          },
+          {
+            "kind": "mcq",
+            "skill": "react",
+            "difficulty": 2,
+            "prompt": "When does useEffect(() => { ... }, []) run?",
+            "options": [
+              "After every render",
+              "Only after the first render (and its cleanup on unmount)",
+              "Before the first render",
+              "Only when props change"
+            ],
+            "correct_index": 1,
+            "explanation": "An empty dependency array means the effect has no reactive inputs, so it runs once after mount.",
+            "answer_index": 1,
+            "points": 1.0
+          },
+          {
+            "kind": "mcq",
+            "skill": "react",
+            "difficulty": 2,
+            "prompt": "Why should list items rendered with map() have a stable key?",
+            "options": [
+              "It makes the list render faster in all cases",
+              "React uses it to match items between renders and preserve their state",
+              "It is required by the HTML specification",
+              "It becomes the element's id attribute"
+            ],
+            "correct_index": 1,
+            "explanation": "Keys let React identify which item is which when the list changes order or length.",
+            "answer_index": 1,
+            "points": 1.0
+          },
+          {
+            "kind": "mcq",
+            "skill": "react",
+            "difficulty": 3,
+            "prompt": "Which statement about a controlled input is true?",
+            "options": [
+              "Its value lives in the DOM only",
+              "Its value comes from React state and changes through an onChange handler",
+              "It cannot be validated",
+              "It requires a ref"
+            ],
+            "correct_index": 1,
+            "explanation": "A controlled input renders value from state and updates state in onChange.",
+            "answer_index": 3,
+            "points": 0.0
+          },
+          {
+            "kind": "short",
+            "skill": "react",
+            "difficulty": 3,
+            "prompt": "A parent component re-renders on every keystroke in a search box, and a large child list below it feels slow. How would you diagnose the problem and what would you change?",
+            "rubric": [
+              {
+                "criterion": "Uses React DevTools Profiler (or similar) to confirm which components re-render",
+                "points": 2
+              },
+              {
+                "criterion": "Moves search state down or isolates it so the list does not re-render",
+                "points": 2
+              },
+              {
+                "criterion": "Mentions React.memo / useMemo / useCallback or virtualization for long lists",
+                "points": 1
+              }
+            ],
+            "model_answer": "Profile first to see which components re-render and why. Then keep the search input state local to the search box (or debounce it) so the list is not a child of the changing state, wrap the list in React.memo with stable props, and virtualize it if it is very long.",
+            "answer_text": "I would open the React DevTools Profiler and record a few keystrokes to see which components re-render. Then I would move the search state into its own component so typing does not re-render the list, and wrap the list in React.memo.",
+            "criteria_met": [
+              0,
+              1,
+              2
+            ],
+            "points": 2.0,
+            "feedback": "Clear, practical plan: profiling first and isolating the state were both on target. You could also mention virtualization for very long lists."
+          }
+        ]
+      }
+    },
+    {
+      "key": "changer",
+      "persona": "Career changer",
+      "display_name": "Eran Katz",
+      "headline": "Junior data analyst, former math teacher: Python, pandas and SQL (Hebrew CV)",
+      "bio": "Seven years of teaching taught me to explain numbers clearly. I changed careers to data, completed an analyst course and now analyze customer data every day.",
+      "location": "Petah Tikva",
+      "tier": "junior",
+      "open_to_opportunities": true,
+      "cv_text": "ערן כץ\nאנליסט נתונים זוטר | פתח תקווה\n\nתקציר\nמורה למתמטיקה לשעבר שעבר לעולם הנתונים. סיימתי קורס אנליסטים, ואני עובד עם Python ו-pandas וכותב שאילתות SQL מדי יום.\n\nניסיון\nאנליסט נתונים זוטר, מפיט אנליטיקס, פתח תקווה (2023-02 עד היום)\n- ניתוח נתוני לקוחות באמצעות Python ו-pandas והכנת דוחות שבועיים.\n- כתיבת שאילתות SQL ובניית דשבורדים ב-Tableau.\nמורה למתמטיקה, תיכון עירוני ה', פתח תקווה (2014-09 עד 2021-08)\n- לימוד מתמטיקה לכיתות י' עד י\"ב והובלת צוות המקצוע.\n\nהשכלה\nקורס אנליסטים ומדעי נתונים, בית ספר לנתונים (2022)\nתואר ראשון במתמטיקה, אוניברסיטת בר-אילן (2010-2014)\n\nכישורים\nפייתון, pandas, NumPy, SQL, Tableau, Excel, גיט\n\nשפות\nעברית (שפת אם), אנגלית (טובה)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "פייתון",
+            "category": "language",
+            "years": 3.0,
+            "evidence_quote": "פייתון, pandas, NumPy, SQL, Tableau, Excel, גיט"
+          },
+          {
+            "name": "pandas",
+            "category": "framework",
+            "years": 2.0,
+            "evidence_quote": "ניתוח נתוני לקוחות באמצעות Python ו-pandas"
+          },
+          {
+            "name": "NumPy",
+            "category": "framework",
+            "years": 1.0,
+            "evidence_quote": "פייתון, pandas, NumPy, SQL"
+          },
+          {
+            "name": "SQL",
+            "category": "language",
+            "years": 2.0,
+            "evidence_quote": "כתיבת שאילתות SQL ובניית דשבורדים ב-Tableau."
+          },
+          {
+            "name": "Tableau",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "בניית דשבורדים ב-Tableau"
+          },
+          {
+            "name": "Excel",
+            "category": "tool",
+            "years": 5.0,
+            "evidence_quote": "Tableau, Excel, גיט"
+          },
+          {
+            "name": "גיט",
+            "category": "tool",
+            "years": 1.0,
+            "evidence_quote": "Excel, גיט"
+          }
+        ],
+        "experience": [
+          {
+            "title": "אנליסט נתונים זוטר",
+            "company": "מפיט אנליטיקס",
+            "start": "2023-02",
+            "end": "present",
+            "description": "ניתוח נתוני לקוחות באמצעות Python ו-pandas והכנת דוחות שבועיים.",
+            "evidence_quote": "אנליסט נתונים זוטר, מפיט אנליטיקס, פתח תקווה (2023-02 עד היום)"
+          },
+          {
+            "title": "מורה למתמטיקה",
+            "company": "תיכון עירוני ה'",
+            "start": "2014-09",
+            "end": "2021-08",
+            "description": "לימוד מתמטיקה לכיתות י' עד י\"ב והובלת צוות המקצוע.",
+            "evidence_quote": "מורה למתמטיקה, תיכון עירוני ה', פתח תקווה (2014-09 עד 2021-08)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "בית ספר לנתונים",
+            "degree": "קורס",
+            "field": "אנליסטים ומדעי נתונים",
+            "start": "2022",
+            "end": "2022",
+            "evidence_quote": "קורס אנליסטים ומדעי נתונים, בית ספר לנתונים (2022)"
+          },
+          {
+            "institution": "אוניברסיטת בר-אילן",
+            "degree": "תואר ראשון",
+            "field": "מתמטיקה",
+            "start": "2010",
+            "end": "2014",
+            "evidence_quote": "תואר ראשון במתמטיקה, אוניברסיטת בר-אילן (2010-2014)"
+          }
+        ],
+        "languages_spoken": [
+          "עברית",
+          "אנגלית"
+        ],
+        "summary": "מורה למתמטיקה לשעבר שעבר לעולם הנתונים."
+      },
+      "repos": [
+        {
+          "owner": "erankatz-data",
+          "name": "bike-share-eda",
+          "is_fork": false,
+          "stars": 5,
+          "pushed_days_ago": 33,
+          "commit_sha": "ef990c5d702707e57ac452689f2f82e593795577",
+          "files": [
+            "README.md",
+            "requirements.txt",
+            "notebooks/01_cleaning.ipynb",
+            "notebooks/02_trip_patterns.ipynb",
+            "src/clean.py",
+            "src/features.py",
+            "tests/test_clean.py"
+          ],
+          "metrics": {
+            "languages": {
+              "Jupyter Notebook": 52300,
+              "Python": 17400
+            },
+            "total_files": 15,
+            "files_by_extension": {
+              ".ipynb": 3,
+              ".py": 4,
+              ".csv": 2,
+              ".md": 2,
+              ".txt": 1
+            },
+            "dependencies": [
+              "pandas",
+              "numpy",
+              "scikit-learn"
+            ],
+            "has_tests": true,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 7,
+            "fetched_lines": 760,
+            "commit_count": 41,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 18,
+            "first_commit": "2026-04-02T18:00:00+00:00",
+            "last_commit": "2026-09-14T19:30:00+00:00",
+            "span_days": 165,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "An exploratory analysis of a city bike-share dataset: cleaning in a tested Python module, trip-pattern notebooks and a simple demand model with scikit-learn. The README states the questions and the findings.",
+            "complexity": 3,
+            "best_practices": [
+              {
+                "practice": "Cleaning logic extracted from notebooks into tested code",
+                "observed": true,
+                "evidence_path": "src/clean.py"
+              },
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "tests/test_clean.py"
+              },
+              {
+                "practice": "Pinned dependencies",
+                "observed": true,
+                "evidence_path": "requirements.txt"
+              }
+            ],
+            "tutorial_likelihood": 0.1,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Notebooks and reusable code are separated",
+              "Findings are explained in plain language"
+            ],
+            "concerns": [
+              "No CI",
+              "Raw data is not versioned or documented"
+            ]
+          },
+          "tutorial_likelihood": 0.1
+        }
+      ],
+      "assessment": null
+    },
+    {
+      "key": "node",
+      "persona": "Mid-level Node dev",
+      "display_name": "Lior Ben-David",
+      "headline": "Mid-level full-stack developer: Node.js services, React dashboards, Docker and AWS",
+      "bio": "Four years in B2B SaaS. I like queues, boring infrastructure and helping juniors get unstuck.",
+      "location": "Ramat HaSharon",
+      "tier": "mid",
+      "open_to_opportunities": true,
+      "cv_text": "Lior Ben-David\nFull-stack Developer | Ramat HaSharon\n\nSUMMARY\nFull-stack developer with four years of experience building Node.js services and React interfaces for B2B SaaS products. Comfortable owning a feature from design to production.\n\nEXPERIENCE\nFull-stack Developer, CloudDesk, Herzliya (2023-01 to present)\n- Own the notifications service in Node.js, processing about two million jobs a day through Redis queues.\n- Led the migration of the customer dashboard from class components to modern React.\nBackend Developer, Shopkeep, Tel Aviv (2022-01 to 2022-12)\n- Built REST APIs in Express and shipped them in Docker containers on AWS.\nJunior Developer, Shopkeep, Tel Aviv (2021-04 to 2021-12)\n- Fixed bugs and wrote Jest tests for the checkout service.\n\nEDUCATION\nB.Sc. Software Engineering, Afeka College of Engineering (2017-2021)\n\nSKILLS\nNode.js, TypeScript, React, Express, PostgreSQL, Docker, AWS, Redis, Git\n\nLANGUAGES\nHebrew (native), English (fluent)\n",
+      "cv": {
+        "skills": [
+          {
+            "name": "Node.js",
+            "category": "framework",
+            "years": 4.0,
+            "evidence_quote": "Own the notifications service in Node.js"
+          },
+          {
+            "name": "TypeScript",
+            "category": "language",
+            "years": 3.0,
+            "evidence_quote": "Node.js, TypeScript, React, Express, PostgreSQL, Docker, AWS, Redis, Git"
+          },
+          {
+            "name": "React",
+            "category": "framework",
+            "years": 3.0,
+            "evidence_quote": "Led the migration of the customer dashboard from class components to modern React."
+          },
+          {
+            "name": "Express",
+            "category": "framework",
+            "years": 3.0,
+            "evidence_quote": "Built REST APIs in Express"
+          },
+          {
+            "name": "PostgreSQL",
+            "category": "database",
+            "years": 3.0,
+            "evidence_quote": "Express, PostgreSQL, Docker, AWS, Redis"
+          },
+          {
+            "name": "Docker",
+            "category": "tool",
+            "years": 3.0,
+            "evidence_quote": "shipped them in Docker containers on AWS"
+          },
+          {
+            "name": "AWS",
+            "category": "cloud",
+            "years": 3.0,
+            "evidence_quote": "Docker containers on AWS"
+          },
+          {
+            "name": "Redis",
+            "category": "database",
+            "years": 2.0,
+            "evidence_quote": "through Redis queues"
+          },
+          {
+            "name": "Git",
+            "category": "tool",
+            "years": null,
+            "evidence_quote": "Redis, Git"
+          }
+        ],
+        "experience": [
+          {
+            "title": "Full-stack Developer",
+            "company": "CloudDesk",
+            "start": "2023-01",
+            "end": "present",
+            "description": "Own the notifications service in Node.js; led the dashboard migration to modern React.",
+            "evidence_quote": "Full-stack Developer, CloudDesk, Herzliya (2023-01 to present)"
+          },
+          {
+            "title": "Backend Developer",
+            "company": "Shopkeep",
+            "start": "2022-01",
+            "end": "2022-12",
+            "description": "Built REST APIs in Express and shipped them in Docker containers on AWS.",
+            "evidence_quote": "Backend Developer, Shopkeep, Tel Aviv (2022-01 to 2022-12)"
+          },
+          {
+            "title": "Junior Developer",
+            "company": "Shopkeep",
+            "start": "2021-04",
+            "end": "2021-12",
+            "description": "Fixed bugs and wrote Jest tests for the checkout service.",
+            "evidence_quote": "Junior Developer, Shopkeep, Tel Aviv (2021-04 to 2021-12)"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Afeka College of Engineering",
+            "degree": "B.Sc.",
+            "field": "Software Engineering",
+            "start": "2017",
+            "end": "2021",
+            "evidence_quote": "B.Sc. Software Engineering, Afeka College of Engineering (2017-2021)"
+          }
+        ],
+        "languages_spoken": [
+          "Hebrew",
+          "English"
+        ],
+        "summary": "Full-stack developer with four years of experience building Node.js services and React interfaces for B2B SaaS products."
+      },
+      "repos": [
+        {
+          "owner": "liorbd",
+          "name": "queue-service",
+          "is_fork": false,
+          "stars": 48,
+          "pushed_days_ago": 6,
+          "commit_sha": "c0047dddb4426123566fcb491b01b7a5c244629f",
+          "files": [
+            "README.md",
+            "LICENSE",
+            "Dockerfile",
+            "package.json",
+            "tsconfig.json",
+            ".github/workflows/ci.yml",
+            "src/server.ts",
+            "src/queue.ts",
+            "src/worker.ts",
+            "test/queue.test.ts"
+          ],
+          "metrics": {
+            "languages": {
+              "TypeScript": 54200,
+              "JavaScript": 4000,
+              "Dockerfile": 2600
+            },
+            "total_files": 52,
+            "files_by_extension": {
+              ".ts": 26,
+              ".json": 7,
+              ".md": 4,
+              ".yml": 2,
+              ".js": 3
+            },
+            "dependencies": [
+              "express",
+              "redis",
+              "jest",
+              "typescript"
+            ],
+            "has_tests": true,
+            "has_ci": true,
+            "has_lint_config": true,
+            "has_readme": true,
+            "has_license": true,
+            "fetched_files": 10,
+            "fetched_lines": 1650,
+            "commit_count": 100,
+            "commits_note": "first page only (max 100)",
+            "author_count": 3,
+            "active_days": 58,
+            "first_commit": "2024-05-10T08:00:00+00:00",
+            "last_commit": "2026-10-11T16:20:00+00:00",
+            "span_days": 884,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A Redis-backed job queue with an Express HTTP API and a separate worker process, written in TypeScript. Retries with backoff, graceful shutdown and integration tests against Redis in CI.",
+            "complexity": 4,
+            "best_practices": [
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "test/queue.test.ts"
+              },
+              {
+                "practice": "Continuous integration",
+                "observed": true,
+                "evidence_path": ".github/workflows/ci.yml"
+              },
+              {
+                "practice": "Containerized deployment",
+                "observed": true,
+                "evidence_path": "Dockerfile"
+              },
+              {
+                "practice": "Graceful shutdown handling",
+                "observed": true,
+                "evidence_path": "src/worker.ts"
+              }
+            ],
+            "tutorial_likelihood": 0.05,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Separation of API and worker processes",
+              "Retry and shutdown behavior is tested",
+              "Active for two years with outside contributors"
+            ],
+            "concerns": [
+              "Metrics and tracing are left to the host application"
+            ]
+          },
+          "tutorial_likelihood": 0.05
+        },
+        {
+          "owner": "liorbd",
+          "name": "shop-frontend",
+          "is_fork": false,
+          "stars": 9,
+          "pushed_days_ago": 130,
+          "commit_sha": "c2a9fde556a704203a208ab3feb324a2151e6213",
+          "files": [
+            "README.md",
+            "package.json",
+            "src/App.jsx",
+            "src/api.js",
+            "src/pages/Cart.jsx",
+            "src/pages/Catalog.jsx",
+            "server/index.js",
+            "server/models/Product.js"
+          ],
+          "metrics": {
+            "languages": {
+              "JavaScript": 38400,
+              "CSS": 6100,
+              "HTML": 1000
+            },
+            "total_files": 37,
+            "files_by_extension": {
+              ".jsx": 12,
+              ".js": 11,
+              ".css": 4,
+              ".json": 3,
+              ".md": 1
+            },
+            "dependencies": [
+              "react",
+              "react-dom",
+              "mongoose",
+              "express",
+              "jest"
+            ],
+            "has_tests": true,
+            "has_ci": false,
+            "has_lint_config": false,
+            "has_readme": true,
+            "has_license": false,
+            "fetched_files": 8,
+            "fetched_lines": 980,
+            "commit_count": 73,
+            "commits_note": "first page only (max 100)",
+            "author_count": 1,
+            "active_days": 30,
+            "first_commit": "2025-01-20T20:00:00+00:00",
+            "last_commit": "2026-06-04T21:10:00+00:00",
+            "span_days": 500,
+            "bulk_initial_commit": false,
+            "tree_truncated": false,
+            "tutorial_signals": {
+              "is_fork": false,
+              "name_match": false,
+              "bulk_initial_commit": false,
+              "few_commits": false
+            },
+            "heuristic_tutorial_score": 0.0,
+            "injection_flags": [],
+            "dropped": []
+          },
+          "assessment": {
+            "architecture_summary": "A small shop with a React catalog and cart on the front and an Express and Mongoose API behind it. A complete vertical slice, from product model to UI.",
+            "complexity": 3,
+            "best_practices": [
+              {
+                "practice": "Automated tests",
+                "observed": true,
+                "evidence_path": "server/index.js"
+              }
+            ],
+            "tutorial_likelihood": 0.1,
+            "tutorial_reasons": [],
+            "strengths": [
+              "Complete front-to-back slice",
+              "Consistent API client in one module"
+            ],
+            "concerns": [
+              "No CI",
+              "Only the server has tests"
+            ]
+          },
+          "tutorial_likelihood": 0.1
+        }
+      ],
+      "assessment": null
+    }
+  ],
+  "matches": {
+    "strong": {
+      "backend": {
+        "reasons": [
+          "Python, FastAPI and PostgreSQL are all proven in a tested, CI-backed repository (ledger-api)",
+          "Junior tier matches the posting; Docker and Git are also on the CV"
+        ],
+        "feedback": {
+          "strengths": [
+            "Your ledger-api repo shows the exact stack this role uses: FastAPI, SQLAlchemy and PostgreSQL",
+            "Tests and CI from early on make you easy to onboard"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Add structured logging and real authentication to ledger-api to show production habits"
+          ]
+        }
+      },
+      "fullstack": {
+        "reasons": [
+          "Strong Python backend evidence, but the role needs Node.js and React",
+          "Docker appears on the CV only; no JavaScript project to review"
+        ],
+        "feedback": {
+          "strengths": [
+            "Solid API design and testing habits transfer well to any backend stack"
+          ],
+          "missing_skills": [
+            "node.js",
+            "react"
+          ],
+          "suggestions": [
+            "Build a small Node.js service and a React page on top of it to cover the core stack"
+          ]
+        }
+      },
+      "data": {
+        "reasons": [
+          "Python is proven, and PostgreSQL experience helps with reporting data",
+          "No pandas or SQL analysis work to review yet"
+        ],
+        "feedback": {
+          "strengths": [
+            "Careful data modeling in ledger-api is a good base for analytics work"
+          ],
+          "missing_skills": [
+            "pandas",
+            "sql"
+          ],
+          "suggestions": [
+            "Publish a short pandas notebook that analyzes data from your own database"
+          ]
+        }
+      }
+    },
+    "node": {
+      "backend": {
+        "reasons": [
+          "Strong engineering evidence (queue-service) but in Node.js, not Python",
+          "Mid-level experience for a junior role"
+        ],
+        "feedback": {
+          "strengths": [
+            "queue-service shows production-grade testing, CI and containerization"
+          ],
+          "missing_skills": [
+            "python",
+            "fastapi"
+          ],
+          "suggestions": [
+            "Port a small piece of queue-service to FastAPI to show the Python side"
+          ]
+        }
+      },
+      "frontend": {
+        "reasons": [
+          "React is proven in shop-frontend and TypeScript in queue-service",
+          "Seniority is above the junior tier of this posting"
+        ],
+        "feedback": {
+          "strengths": [
+            "A complete React front-to-back slice, plus a typed codebase"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Add component tests to shop-frontend; only the server is covered today"
+          ]
+        }
+      },
+      "fullstack": {
+        "reasons": [
+          "Node.js services and React interfaces match the core stack, backed by two public repositories",
+          "Docker and AWS are on the CV; PostgreSQL experience is a plus",
+          "Four years of experience fits the mid tier"
+        ],
+        "feedback": {
+          "strengths": [
+            "queue-service is a strong, well-tested Node.js project",
+            "Experience across API, queue and UI work is exactly what this role needs"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Add a short architecture note to queue-service README explaining the retry design"
+          ]
+        }
+      }
+    },
+    "changer": {
+      "backend": {
+        "reasons": [
+          "Python is proven, but there is no FastAPI or PostgreSQL work",
+          "Strong data skills are not the focus of this role"
+        ],
+        "feedback": {
+          "strengths": [
+            "Python repo has tests and clean, reusable code"
+          ],
+          "missing_skills": [
+            "fastapi",
+            "postgresql"
+          ],
+          "suggestions": [
+            "Turn the bike-share analysis into a small FastAPI service backed by PostgreSQL"
+          ]
+        }
+      },
+      "data": {
+        "reasons": [
+          "Python, pandas, NumPy and scikit-learn are all proven in the bike-share-eda repository",
+          "SQL and Tableau experience come from current work; a career change adds domain maturity"
+        ],
+        "feedback": {
+          "strengths": [
+            "bike-share-eda separates notebooks from tested code and explains its findings clearly",
+            "Daily analyst experience since early 2023"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Add a SQL file to the repo that reproduces the main aggregations"
+          ]
+        }
+      }
+    },
+    "badge": {
+      "frontend": {
+        "reasons": [
+          "React is verified by a passing assessment, and TypeScript and JavaScript are proven in public repositories",
+          "Accessibility focus matches the right-to-left, multi-language console"
+        ],
+        "feedback": {
+          "strengths": [
+            "Verified React knowledge (83% on the assessment) and a well-tested TypeScript CLI",
+            "Keyboard and screen-reader attention is rare at junior level"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Add a small React demo repository so the React skill is also visible in code"
+          ]
+        }
+      },
+      "fullstack": {
+        "reasons": [
+          "React is verified, but the role needs Node.js and Docker",
+          "Level is below the mid tier"
+        ],
+        "feedback": {
+          "strengths": [
+            "Verified React skills and TypeScript tooling experience"
+          ],
+          "missing_skills": [
+            "node.js",
+            "docker"
+          ],
+          "suggestions": [
+            "Containerize design-tokens-cli with Docker and expose it as a small Node.js API"
+          ]
+        }
+      }
+    },
+    "cvonly": {
+      "frontend": {
+        "reasons": [
+          "React, TypeScript and CSS are claimed on the CV, but no repository proves them",
+          "The one analyzed repository is a small static page"
+        ],
+        "feedback": {
+          "strengths": [
+            "Two years of experience building production sites"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Publish a React and TypeScript project with tests: claimed skills count for far more once they are visible in code"
+          ]
+        }
+      },
+      "fullstack": {
+        "reasons": [
+          "Node.js, React and Docker are listed on the CV only; nothing to review yet",
+          "Experience level is below the mid tier"
+        ],
+        "feedback": {
+          "strengths": [
+            "Broad stack on the CV"
+          ],
+          "missing_skills": [],
+          "suggestions": [
+            "Build one end-to-end Node.js and React project and link it from your profile"
+          ]
+        }
+      }
+    },
+    "tutorial": {
+      "frontend": {
+        "reasons": [
+          "React appears on the CV, but the React repository looks like a course project",
+          "TypeScript is missing"
+        ],
+        "feedback": {
+          "strengths": [
+            "Readable component code and a personal portfolio site"
+          ],
+          "missing_skills": [
+            "typescript"
+          ],
+          "suggestions": [
+            "Replace the course to-do app with a project of your own design and add TypeScript"
+          ]
+        }
+      },
+      "data": {
+        "reasons": [
+          "No Python, pandas or SQL experience to review"
+        ],
+        "feedback": {
+          "strengths": [
+            "Eager learner with fast progress through courses"
+          ],
+          "missing_skills": [
+            "python",
+            "pandas",
+            "sql"
+          ],
+          "suggestions": [
+            "Start with Python and SQL basics, then analyze an open dataset in a notebook"
+          ]
+        }
+      }
+    }
+  }
+}

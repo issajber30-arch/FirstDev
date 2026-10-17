@@ -130,10 +130,13 @@ def score_and_store(
     profile: DeveloperProfile,
     explain: bool,
     context: LLMContext | None = None,
+    commit_profile: bool = True,
 ) -> MatchScore:
-    """Score one pair, reusing a fresh cached row. Flushes but never commits: if the LLM call
-    fails nothing half-written survives (run_once rolls back)."""
-    sp = build_skill_profile(db, profile)  # inline: the embed job may not have run yet
+    """Score one pair, reusing a fresh cached row. Flushes but never commits (except the skill
+    profile rebuild, unless `commit_profile=False`): if the LLM call fails nothing half-written
+    survives (run_once rolls back)."""
+    # inline: the embed job may not have run yet
+    sp = build_skill_profile(db, profile, commit=commit_profile)
     ms = db.scalars(
         select(MatchScore).where(
             MatchScore.posting_id == posting.id, MatchScore.profile_id == profile.user_id
@@ -204,6 +207,9 @@ def handle_score_pair(db: Session, job: Job, llm: LLM) -> None:
 # --- recruiter ranking -------------------------------------------------------------------------
 
 RECALL_K, EXPLAIN_TOP = 50, 20
+SANDBOX_EXPLAIN_TOP = (
+    5  # sandbox worlds explain fewer candidates (decided here, not in the payload)
+)
 
 
 def handle_rank_posting(db: Session, job: Job, llm: LLM) -> None:
@@ -256,13 +262,14 @@ def handle_rank_posting(db: Session, job: Job, llm: LLM) -> None:
         for pid in order[:RECALL_K]
     ]
     scored.sort(key=lambda m: m.base_score, reverse=True)
-    for m in scored[:EXPLAIN_TOP]:
+    top = SANDBOX_EXPLAIN_TOP if recruiter.world_id is not None else EXPLAIN_TOP
+    for m in scored[:top]:
         score_and_store(
             db, llm, posting=posting, profile=by_id[m.profile_id], explain=True, context=ctx
         )
     db.commit()
     log.info("ranked posting=%s candidates=%d explained=%d", posting.id, len(scored),
-             min(len(scored), EXPLAIN_TOP))  # fmt: skip
+             min(len(scored), top))  # fmt: skip
 
 
 HANDLERS[JobKind.score_pair] = handle_score_pair

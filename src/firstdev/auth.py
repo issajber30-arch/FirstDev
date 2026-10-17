@@ -77,7 +77,8 @@ def current_user(
     except jwt.PyJWTError:
         raise _unauthorized() from None
     user = db.get(User, user_id)
-    if user is None:
+    # A sandbox user past its 24 h life is dead even before the sweep deletes it.
+    if user is None or (user.expires_at is not None and user.expires_at <= datetime.now(UTC)):
         raise _unauthorized()
     return user
 

@@ -189,7 +189,13 @@ def test_get_llm_returns_canned_in_fake_mode(set_env):
 
 
 def test_fake_mode_in_prod_refused_at_startup(set_env):
-    set_env(env="prod", llm_mode="fake", proxy_secret="p" * 20, cookie_secure="true")
+    set_env(
+        env="prod",
+        llm_mode="fake",
+        proxy_secret="p" * 20,
+        cookie_secure="true",
+        turnstile_disabled="false",
+    )
     with pytest.raises(ValidationError, match="LLM_MODE"):
         get_settings()
 
@@ -197,7 +203,13 @@ def test_fake_mode_in_prod_refused_at_startup(set_env):
 def test_fake_mode_allowed_outside_prod_and_real_in_prod(set_env):
     set_env(env="dev", llm_mode="fake")
     assert get_settings().llm_mode == "fake"
-    set_env(env="prod", llm_mode="real", proxy_secret="p" * 20, cookie_secure="true")
+    set_env(
+        env="prod",
+        llm_mode="real",
+        proxy_secret="p" * 20,
+        cookie_secure="true",
+        turnstile_disabled="false",
+    )
     assert get_settings().llm_mode == "real"
 
 

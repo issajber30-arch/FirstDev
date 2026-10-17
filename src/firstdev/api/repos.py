@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from firstdev import auth
 from firstdev.api.profiles import current_profile
 from firstdev.db import get_db
+from firstdev.demo import quota
 from firstdev.github import InvalidRepoUrl, parse_repo_url
 from firstdev.jobs import enqueue
 from firstdev.models import (
@@ -100,6 +101,7 @@ def add_repo(
             response.status_code = 200
             return RepoQueued(repo_id=repo.id, job_id=running.id, status=running.status)
 
+    quota.check(db, user, "repo_analyze")  # sandbox AI quota
     since = datetime.now(UTC) - timedelta(hours=24)
     recent = db.scalar(
         select(func.count())

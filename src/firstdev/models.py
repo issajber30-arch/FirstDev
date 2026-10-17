@@ -199,6 +199,16 @@ class User(Base):
     created_at: Mapped[datetime] = _created()
 
 
+class SandboxCreation(Base):
+    """One sandbox created from an IP; only sha256(ip + jwt secret) is kept, never the raw IP."""
+
+    __tablename__ = "sandbox_creations"
+
+    id: Mapped[str] = _pk()
+    ip_hash: Mapped[str] = mapped_column(String(64), index=True)
+    created_at: Mapped[datetime] = _created()
+
+
 class RefreshToken(Base):
     """One link in a rotating refresh chain; all links of a login share a family_id."""
 

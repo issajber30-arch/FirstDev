@@ -19,6 +19,7 @@ from firstdev.api.profiles import current_profile
 from firstdev.assessments import report, take
 from firstdev.assessments.generate import create_assessment
 from firstdev.db import get_db
+from firstdev.demo import quota
 from firstdev.matching.profile import is_verified
 from firstdev.models import (
     ApplicationStatus,
@@ -199,6 +200,7 @@ def send_assessment(
         raise HTTPException(409, f"application is {app.status}")
     if db.scalar(select(Assessment.id).where(Assessment.application_id == app.id)):
         raise HTTPException(409, "an assessment was already sent for this application")
+    quota.check(db, user, "assessment")  # sandbox AI quota
     if _count_since(db, Assessment.created_by == user.id) >= DAILY_RECRUITER_SENDS:
         raise HTTPException(429, "daily assessment limit reached")
     a = create_assessment(
@@ -246,6 +248,7 @@ def start_practice(
     for s in skills:
         if s in used:
             raise HTTPException(409, f"practice for {s!r} was taken in the last 7 days")
+    quota.check(db, user, "assessment")  # sandbox AI quota
     a = create_assessment(
         db, profile=profile, kind=AssessmentKind.practice, skills=skills, created_by=user.id
     )

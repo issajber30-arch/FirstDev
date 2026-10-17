@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # "fake" swaps in CannedLLM (no API calls, no cost); refused in prod.
     llm_mode: Literal["real", "fake"] = "real"
     llm_daily_usd: float = 5.0  # global cap across all users and sandboxes, UTC day
+    # Cloudflare Turnstile guards sandbox creation. "Disabled" skips the check (dev/tests only).
+    turnstile_secret: SecretStr | None = None
+    turnstile_disabled: bool = False
     # Where fastembed caches the embedding model (downloaded once, by the worker only).
     model_cache: str = "~/.cache/firstdev/models"
     # Unprefixed env var (shared convention); read-only public-repo token, never logged.
@@ -48,6 +51,8 @@ class Settings(BaseSettings):
                 raise ValueError("FIRSTDEV_PROXY_SECRET is required when env is prod")
             if not self.cookie_secure:
                 raise ValueError("FIRSTDEV_COOKIE_SECURE must be true when env is prod")
+            if self.turnstile_disabled:
+                raise ValueError("FIRSTDEV_TURNSTILE_DISABLED is not allowed when env is prod")
         return self
 
 

@@ -142,9 +142,10 @@ def compute_skills(
 
 
 def build_skill_profile(
-    db: Session, profile: DeveloperProfile, *, now: datetime | None = None
+    db: Session, profile: DeveloperProfile, *, now: datetime | None = None, commit: bool = True
 ) -> SkillProfile:
-    """Compute the skill profile and upsert it."""
+    """Compute the skill profile and upsert it. `commit=False` only flushes (sandbox cloning
+    builds a whole world in one transaction)."""
     skills, tier = compute_skills(db, profile, now or datetime.now(UTC))
     fp = profile_fingerprint(skills, str(tier))
 
@@ -154,7 +155,10 @@ def build_skill_profile(
         db.add(sp)
     else:
         sp.skills, sp.tier, sp.fingerprint = skills, tier, fp
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return sp
 
 

@@ -58,7 +58,7 @@ def test_headers_on_middleware_rejections(client, register):
 
 
 def test_hsts_only_in_prod(client, set_env):
-    set_env(env="prod", proxy_secret=SECRET, cookie_secure="true")
+    set_env(env="prod", proxy_secret=SECRET, cookie_secure="true", turnstile_disabled="false")
     r = client.get("/health")
     assert r.headers["strict-transport-security"] == "max-age=31536000"
 
@@ -84,7 +84,7 @@ def test_no_store_on_auth_responses(client, register):
 
 
 def test_prod_requires_proxy_secret_and_secure_cookies(monkeypatch):
-    base = {"jwt_secret": "j" * 40, "env": "prod"}
+    base = {"jwt_secret": "j" * 40, "env": "prod", "turnstile_disabled": False}
     with pytest.raises(ValueError, match="PROXY_SECRET"):
         Settings(_env_file=None, cookie_secure=True, **base)
     with pytest.raises(ValueError, match="COOKIE_SECURE"):

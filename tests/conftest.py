@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parent.parent
 os.environ["FIRSTDEV_JWT_SECRET"] = "test-secret-" + "x" * 40
 os.environ["FIRSTDEV_ENV"] = "dev"
 os.environ["FIRSTDEV_REQUIRE_INVITE"] = "false"  # invite tests turn it back on
+os.environ["FIRSTDEV_TURNSTILE_DISABLED"] = "true"  # Turnstile tests turn it back on
 os.environ["FIRSTDEV_COOKIE_SECURE"] = "false"  # TestClient speaks plain http
 
 import pytest  # noqa: E402

@@ -13,6 +13,7 @@ from firstdev.api.applications import VERIFY_MESSAGE
 from firstdev.api.postings import current_recruiter, load_open_posting
 from firstdev.api.profiles import current_profile
 from firstdev.db import get_db
+from firstdev.demo import quota
 from firstdev.jobs import enqueue
 from firstdev.matching import embeddings
 from firstdev.matching.profile import build_skill_profile, is_verified, latest_cv_parse
@@ -109,6 +110,7 @@ def rank_posting(
     posting = auth.get_owned(db, JobPosting, posting_id, user)
     if posting.status != PostingStatus.open:
         raise HTTPException(404, "not found")
+    quota.check(db, user, "rank_posting")  # sandbox AI quota
     if _daily_count(db, user, JobKind.rank_posting) >= DAILY_RANKS:
         raise HTTPException(429, "daily ranking limit reached")
     job = enqueue(db, user, JobKind.rank_posting, {"posting_id": posting.id})
@@ -256,6 +258,7 @@ def my_match(
     if in_flight is not None:
         response.status_code = 202
         return JobQueued(job_id=in_flight)
+    quota.check(db, user, "score_pair")  # sandbox AI quota
     # Only on-demand requests count; scores triggered by applying have their own limit.
     since = datetime.now(UTC) - timedelta(hours=24)
     on_demand = db.scalar(

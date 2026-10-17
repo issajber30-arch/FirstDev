@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from firstdev import auth
 from firstdev.api.profiles import current_profile
 from firstdev.db import get_db
+from firstdev.demo import quota
 from firstdev.jobs import enqueue
 from firstdev.models import CvDocument, CvParse, CvStatus, DeveloperProfile, Job, JobKind, User
 from firstdev.pipelines.cv_parser import prepare_text
@@ -50,6 +51,7 @@ def upload_cv(
 ) -> CvQueued:
     if (file is None) == (text is None):
         raise HTTPException(422, "send exactly one of 'file' or 'text'")
+    quota.check(db, user, "cv_parse")  # sandbox AI quota
     # Quota first: it is cheap and runs before the expensive PDF extraction.
     since = datetime.now(UTC) - timedelta(hours=24)
     recent = db.scalar(
