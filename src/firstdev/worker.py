@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from firstdev.db import get_engine
 from firstdev.jobs import worker_main
 from firstdev.llm import get_llm
-from firstdev.pipelines import cv_parser  # noqa: F401  (import registers the cv_parse handler)
+from firstdev.pipelines import cv_parser, repo_analyzer  # noqa: F401  (import registers handlers)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

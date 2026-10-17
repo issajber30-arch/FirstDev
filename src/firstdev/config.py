@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from functools import lru_cache
 
-from pydantic import SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     jwt_ttl_minutes: int = 15
     llm_model: str = "claude-opus-5-5"
     llm_effort: str = "medium"
+    # Unprefixed env var (shared convention); read-only public-repo token, never logged.
+    github_token: SecretStr | None = Field(default=None, validation_alias="GITHUB_TOKEN")
 
     @field_validator("jwt_secret")
     @classmethod

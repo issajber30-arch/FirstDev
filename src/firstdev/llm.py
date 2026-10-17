@@ -11,6 +11,7 @@ import pydantic
 from pydantic import BaseModel
 
 from firstdev.config import get_settings
+from firstdev.errors import TransientError
 
 log = logging.getLogger("firstdev.llm")
 
@@ -33,7 +34,7 @@ class LLMInvalidOutput(LLMError):
     pass
 
 
-class LLMTransientError(LLMError):
+class LLMTransientError(LLMError, TransientError):
     pass
 
 

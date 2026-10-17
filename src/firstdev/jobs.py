@@ -8,7 +8,9 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from firstdev.llm import LLM, LLMError, LLMTransientError
+from firstdev.errors import TransientError
+from firstdev.github import GitHubError
+from firstdev.llm import LLM, LLMError
 from firstdev.models import Job, JobKind, JobStatus, User
 
 log = logging.getLogger("firstdev.jobs")
@@ -90,7 +92,9 @@ def requeue_stale(db: Session, *, older_than: timedelta = timedelta(minutes=10))
 
 def _safe_error(exc: Exception) -> str:
     # Only our own exception types carry vetted messages; third-party text may echo user data.
-    if isinstance(exc, LLMError | ValueError) and type(exc).__module__.startswith("firstdev"):
+    if isinstance(exc, LLMError | GitHubError | ValueError) and type(exc).__module__.startswith(
+        "firstdev"
+    ):
         return f"{type(exc).__name__}: {exc}"[:500]
     return type(exc).__name__[:500]
 
@@ -110,7 +114,7 @@ def run_once(db_factory: Callable[[], Session], handlers: dict[JobKind, Handler]
         except Exception as exc:
             db.rollback()  # discard half-done handler work before recording status
             error = _safe_error(exc)
-            retry = isinstance(exc, LLMTransientError) and job.attempts < MAX_ATTEMPTS
+            retry = isinstance(exc, TransientError) and job.attempts < MAX_ATTEMPTS
             status = JobStatus.queued if retry else JobStatus.failed
             log.warning("job %s kind=%s failed: %s", job_id, kind, error)
         # Status goes in its own transaction so a handler crash can't lose it.
