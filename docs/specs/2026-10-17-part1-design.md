@@ -90,7 +90,7 @@ docs/specs/2026-10-17-part1-design.md (this plan, copied at M0, incl. brand note
    - PDF ≤ 5 MB with the `%PDF-` file signature, ≤ 10 pages, not encrypted.
    - Or text ≤ 200 KB.
    - The browser's content type and the filename are ignored. The filename is never used as a path.
-2. **Text extraction:** pypdf runs in a subprocess with a 20 s timeout and a cap on output size, which guards against PDF bombs and parser hangs. A PDF with no extractable text gets status `needs_text`: "scanned PDFs aren't supported yet". OCR comes later.
+2. **Text extraction:** pypdf runs in a subprocess with a 20 s timeout and a cap on output size, which guards against PDF bombs and parser hangs. Extraction runs synchronously in the upload request, so the raw file is never written to disk or the DB (only sanitized text is stored). A PDF with no extractable text is rejected with 422 "no extractable text; scanned PDFs aren't supported yet" and nothing is stored. OCR comes later.
    `shortcut: macOS ignores RLIMIT_AS, so memory is bounded only by timeout; add a container memory limit at deploy.`
 3. **Sanitize** (`security/sanitize.py`):
    - Unicode NFKC normalization.

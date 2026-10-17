@@ -17,6 +17,8 @@ MAX_ATTEMPTS = 3
 Handler = Callable[[Session, Job, LLM], None]
 # Pipelines (M3/M4) register themselves here.
 HANDLERS: dict[JobKind, Handler] = {}
+# Called when a job ends in `failed` so the pipeline can surface it on its own record.
+FAILURE_HOOKS: dict[JobKind, Callable[[Session, Job], None]] = {}
 
 
 def enqueue(db: Session, user: User, kind: JobKind, payload: dict) -> Job:
@@ -54,19 +56,35 @@ def claim_next(db: Session, *, now: datetime | None = None) -> Job | None:
     return db.get(Job, job_id)
 
 
+def _run_failure_hook(db: Session, job: Job) -> None:
+    hook = FAILURE_HOOKS.get(job.kind)
+    if hook is None:
+        return
+    try:
+        hook(db, job)
+        db.commit()
+    except Exception as exc:  # a hook bug must never crash the worker
+        db.rollback()
+        log.warning("failure hook for job kind=%s raised %s", job.kind, type(exc).__name__)
+
+
 def requeue_stale(db: Session, *, older_than: timedelta = timedelta(minutes=10)) -> int:
     cutoff = datetime.now(UTC) - older_than
     stale = db.scalars(
         select(Job).where(Job.status == JobStatus.running, Job.locked_at < cutoff)
     ).all()
+    gave_up = []
     for job in stale:
         if job.attempts < MAX_ATTEMPTS:
             job.status = JobStatus.queued
         else:
             job.status = JobStatus.failed
             job.last_error = f"gave up after {MAX_ATTEMPTS} attempts"
+            gave_up.append(job)
         job.locked_at = None
     db.commit()
+    for job in gave_up:
+        _run_failure_hook(db, job)
     return len(stale)
 
 
@@ -104,6 +122,8 @@ def run_once(db_factory: Callable[[], Session], handlers: dict[JobKind, Handler]
             .execution_options(synchronize_session=False)
         )
         db.commit()
+        if status == JobStatus.failed:
+            _run_failure_hook(db, job)
         return True
 
 

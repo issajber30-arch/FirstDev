@@ -35,6 +35,9 @@ def db(engine):
 @pytest.fixture
 def client(engine):
     auth.login_limiter.reset()
+    from firstdev.api import cv
+
+    cv.rejected_uploads.reset()
     factory = sessionmaker(engine, expire_on_commit=False)
 
     def override():
