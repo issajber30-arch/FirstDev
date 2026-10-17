@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
-"""Matching job handlers. Payloads carry ids only. (rank_posting comes in a later milestone.)"""
+"""Matching job handlers. Payloads carry ids only."""
 
 import hashlib
 import logging
@@ -12,9 +12,9 @@ from firstdev.jobs import HANDLERS
 from firstdev.llm import LLM
 from firstdev.matching import embeddings
 from firstdev.matching.explain import review_pair
-from firstdev.matching.profile import build_skill_profile, posting_fingerprint
+from firstdev.matching.profile import build_skill_profile, is_verified, posting_fingerprint
 from firstdev.matching.score import apply_review, base_score
-from firstdev.matching.vectors import upsert_embedding
+from firstdev.matching.vectors import from_blob, top_k, upsert_embedding
 from firstdev.models import (
     Application,
     DeveloperProfile,
@@ -24,6 +24,7 @@ from firstdev.models import (
     JobPosting,
     MatchScore,
     OwnerKind,
+    PostingStatus,
     RepoAnalysis,
     Repository,
     SkillProfile,
@@ -60,11 +61,7 @@ def handle_embed_profile(db: Session, job: Job, llm: LLM) -> None:
     log.info("embedded profile=%s", profile.user_id)
 
 
-def handle_embed_posting(db: Session, job: Job, llm: LLM) -> None:
-    pid = job.payload.get("posting_id")
-    posting = db.get(JobPosting, pid) if pid else None
-    if posting is None:
-        return
+def _embed_posting(db: Session, posting: JobPosting) -> None:
     fp = posting_fingerprint(posting)
     emb = embeddings.get_embedder()
     if _unchanged(db, OwnerKind.posting, Embedding.posting_id, posting.id, emb.model, fp):
@@ -75,6 +72,14 @@ def handle_embed_posting(db: Session, job: Job, llm: LLM) -> None:
         vector=np.asarray(vec, dtype=np.float32), fingerprint=fp,
     )  # fmt: skip
     log.info("embedded posting=%s", posting.id)
+
+
+def handle_embed_posting(db: Session, job: Job, llm: LLM) -> None:
+    pid = job.payload.get("posting_id")
+    posting = db.get(JobPosting, pid) if pid else None
+    if posting is None:
+        return
+    _embed_posting(db, posting)
 
 
 # --- scoring -----------------------------------------------------------------------------------
@@ -179,6 +184,63 @@ def handle_score_pair(db: Session, job: Job, llm: LLM) -> None:
     )
 
 
+# --- recruiter ranking -------------------------------------------------------------------------
+
+RECALL_K, EXPLAIN_TOP = 50, 20
+
+
+def handle_rank_posting(db: Session, job: Job, llm: LLM) -> None:
+    """Recall up to 50 opted-in, verified profiles, base-score all, explain only the top 20."""
+    posting = db.get(JobPosting, job.payload.get("posting_id") or "")
+    if posting is None or posting.status != PostingStatus.open:
+        return
+    _embed_posting(db, posting)  # inline: the queued embed job may not have run yet
+    # shortcut: is_verified is one query per opted-in profile; push into SQL past ~10k profiles.
+    pool = [
+        p
+        for p in db.scalars(
+            select(DeveloperProfile).where(DeveloperProfile.open_to_opportunities.is_(True))
+        )
+        if is_verified(db, p)
+    ]
+    emb = embeddings.get_embedder()
+    row = db.scalars(
+        select(Embedding).where(
+            Embedding.owner_kind == OwnerKind.posting,
+            Embedding.posting_id == posting.id,
+            Embedding.model == emb.model,
+        )
+    ).first()
+    hits = (
+        top_k(
+            db,
+            query=from_blob(row.vector, row.dim),
+            owner_kind=OwnerKind.profile,
+            model=emb.model,
+            candidate_ids=[p.user_id for p in pool],
+            k=RECALL_K,
+        )  # fmt: skip
+        if row is not None
+        else []
+    )
+    order = [pid for pid, _ in hits]
+    # Profiles without a vector yet (just verified) must not be invisible: append them.
+    seen = set(order)
+    order += [p.user_id for p in pool if p.user_id not in seen]
+    by_id = {p.user_id: p for p in pool}
+    scored = [
+        score_and_store(db, llm, posting=posting, profile=by_id[pid], explain=False)
+        for pid in order[:RECALL_K]
+    ]
+    scored.sort(key=lambda m: m.base_score, reverse=True)
+    for m in scored[:EXPLAIN_TOP]:
+        score_and_store(db, llm, posting=posting, profile=by_id[m.profile_id], explain=True)
+    db.commit()
+    log.info("ranked posting=%s candidates=%d explained=%d", posting.id, len(scored),
+             min(len(scored), EXPLAIN_TOP))  # fmt: skip
+
+
 HANDLERS[JobKind.score_pair] = handle_score_pair
 HANDLERS[JobKind.embed_profile] = handle_embed_profile
 HANDLERS[JobKind.embed_posting] = handle_embed_posting
+HANDLERS[JobKind.rank_posting] = handle_rank_posting

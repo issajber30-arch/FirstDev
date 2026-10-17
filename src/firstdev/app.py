@@ -1,7 +1,17 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from fastapi import FastAPI
 
-from firstdev.api import applications, auth, cv, invitations, jobs, postings, profiles, repos
+from firstdev.api import (
+    applications,
+    auth,
+    cv,
+    invitations,
+    jobs,
+    matches,
+    postings,
+    profiles,
+    repos,
+)
 from firstdev.config import get_settings
 from firstdev.security.body_limit import BodySizeLimit
 from firstdev.security.uploads import PDF_MAX
@@ -29,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(postings.router)
     app.include_router(applications.router)
     app.include_router(invitations.router)
+    app.include_router(matches.router)
     # Largest legit request is a 5 MB CV plus multipart framing.
     app.add_middleware(BodySizeLimit, max_bytes=PDF_MAX + 64 * 1024)
     return app

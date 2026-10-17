@@ -5,7 +5,7 @@ import hashlib
 import json
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from firstdev.models import (
@@ -74,16 +74,20 @@ def _merge(into: dict[str, dict], skill: str, level: str, years: float | None, s
         cur["sources"].append(source)
 
 
-def build_skill_profile(db: Session, profile: DeveloperProfile) -> SkillProfile:
-    """Merge CV skills (level cv) with repo evidence (level repo) and upsert the row."""
-    merged: dict[str, dict] = {}
-    cv = db.scalars(
+def latest_cv_parse(db: Session, profile_id: str) -> CvParse | None:
+    return db.scalars(
         select(CvParse)
         .join(CvDocument, CvDocument.id == CvParse.cv_document_id)
-        .where(CvDocument.profile_id == profile.user_id, CvDocument.status == CvStatus.parsed)
+        .where(CvDocument.profile_id == profile_id, CvDocument.status == CvStatus.parsed)
         .order_by(CvDocument.created_at.desc(), CvParse.created_at.desc())
         .limit(1)
     ).first()
+
+
+def build_skill_profile(db: Session, profile: DeveloperProfile) -> SkillProfile:
+    """Merge CV skills (level cv) with repo evidence (level repo) and upsert the row."""
+    merged: dict[str, dict] = {}
+    cv = latest_cv_parse(db, profile.user_id)
     cv_data = cv.data if cv else {}
     for s in cv_data.get("skills", []):
         if (n := normalize_skill(str(s.get("name", "")))) is not None:
@@ -129,3 +133,16 @@ def build_skill_profile(db: Session, profile: DeveloperProfile) -> SkillProfile:
         sp.skills, sp.tier, sp.fingerprint = skills, tier, fp
     db.commit()
     return sp
+
+
+def is_verified(db: Session, profile: DeveloperProfile) -> bool:
+    """A parsed CV and at least one analyzed repository."""
+    has_cv = exists().where(
+        CvDocument.profile_id == profile.user_id, CvDocument.status == CvStatus.parsed
+    )
+    has_analysis = (
+        exists()
+        .where(RepoAnalysis.repository_id == Repository.id)
+        .where(Repository.profile_id == profile.user_id)
+    )
+    return bool(db.scalar(select(has_cv & has_analysis)))

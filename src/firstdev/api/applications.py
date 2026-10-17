@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import exists, func, select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -12,20 +12,17 @@ from firstdev.api.postings import current_recruiter, load_open_posting
 from firstdev.api.profiles import current_profile
 from firstdev.db import get_db
 from firstdev.jobs import enqueue
+from firstdev.matching.profile import is_verified
 from firstdev.models import (
     Application,
     ApplicationStatus,
     ApplicationStatusEvent,
-    CvDocument,
-    CvStatus,
     DeveloperProfile,
     Invitation,
     InvitationStatus,
     JobKind,
     JobPosting,
     MatchScore,
-    RepoAnalysis,
-    Repository,
     User,
 )
 
@@ -81,19 +78,6 @@ class RecruiterApplicationOut(BaseModel):
     components: dict | None
     reasons: list | None
     injection_flags: list
-
-
-def is_verified(db: Session, profile: DeveloperProfile) -> bool:
-    """A parsed CV and at least one analyzed repository."""
-    has_cv = exists().where(
-        CvDocument.profile_id == profile.user_id, CvDocument.status == CvStatus.parsed
-    )
-    has_analysis = (
-        exists()
-        .where(RepoAnalysis.repository_id == Repository.id)
-        .where(Repository.profile_id == profile.user_id)
-    )
-    return bool(db.scalar(select(has_cv & has_analysis)))
 
 
 def _log(db: Session, app: Application, to: ApplicationStatus, actor: User) -> None:
