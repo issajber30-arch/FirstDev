@@ -477,3 +477,10 @@ def test_match_non_open_missing_or_recruiter_404(client, db, dev, rec, user_fact
     assert client.get(f"/me/matches/{draft.id}", headers=rec["h"]).status_code == 404
     assert client.get("/me/matches/x").status_code == 401
     assert db.scalars(select(Job).where(Job.kind == JobKind.score_pair)).all() == []
+
+
+def test_unverified_developer_cannot_spend_llm_on_matches(client, register, login, pid, db):
+    register("fresh@example.com")
+    r = client.get(f"/me/matches/{pid}", headers=login("fresh@example.com"))
+    assert r.status_code == 403 and "verify your profile" in r.json()["detail"]
+    assert db.scalars(select(Job).where(Job.kind == JobKind.score_pair)).all() == []

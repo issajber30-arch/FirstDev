@@ -20,7 +20,7 @@ Git hooks live in `.githooks` (`core.hooksPath`): pre-commit scans staged conten
 
 ## Architecture
 
-Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Parser, Repo-Analyzer. Job-Matcher, Assessment-Gen and the frontend are later parts.
+Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Parser, Repo-Analyzer. Part 2 = postings, applications, Job-Matcher. Assessment-Gen (Part 3) and the frontend come later.
 
 - **Two processes, one SQLite DB.** The FastAPI API (`app.py`, routers in `api/`) writes a `jobs` row and returns 202. The worker (`worker.py` → `jobs.worker_main`) claims jobs atomically (`UPDATE … RETURNING`, single worker only) and dispatches by `JobKind` through `jobs.HANDLERS`. Pipelines register their handler (and optional `FAILURE_HOOKS` entry) at import, and `worker.py` imports them. Retries happen only for `errors.TransientError` subclasses, with backoff via `jobs.run_after`, max 3 attempts. `last_error` only ever holds firstdev's own messages.
 - **Pipelines** (`pipelines/cv_parser.py`, `pipelines/repo_analyzer.py`) share one pattern: sanitize (`security/sanitize.py`) → heuristic `injection.scan` flags (stored, never blocking) → `wrap_untrusted(...)` delimiters → `llm.extract(schema, SYSTEM_PROMPT, content)` (structured output, no tools) → post-validation in code (evidence quotes/paths must exist in the source, clamps, caps). Deterministic facts (CV gaps, repo metrics, tutorial heuristics) are computed in code, never by the LLM.
@@ -30,6 +30,14 @@ Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Par
   - The GitHub client only calls `https://api.github.com`, with no redirects and escaped path segments. Repo code is never cloned or run.
   - Every by-id read goes through `auth.get_owned`, which returns 404 for both missing and foreign rows.
   - Job payloads carry ids only, never user content.
+- **Matching (Part 2, spec `docs/specs/2026-10-17-part2-design.md`).** Recall → score → explain:
+  - `matching/profile.build_skill_profile` merges CV skills (`cv`, 0.6 credit) with repo evidence (`repo`, 1.0). Repo evidence comes from languages ≥ 2 KB and manifest dependencies. Repos with `tutorial_likelihood` ≥ 0.7 prove nothing.
+  - `matching/vectors.top_k` does numpy cosine recall over float32 BLOBs in `embeddings`.
+  - `matching/score.base_score` is the deterministic 70/15/15 formula.
+  - `matching/explain` is the only LLM step: it confirms equivalences, writes reasons and feedback, and adjusts ±10 only with a reason. Its input is built from an allowlist, never from CV dumps.
+  - `match_scores` are cached and treated as stale when the skill-profile or posting fingerprint changes.
+  - The embedding model (fastembed `paraphrase-multilingual-MiniLM-L12-v2`, cached in `~/.cache/firstdev/models`) loads only in the worker. Tests use the autouse `FakeEmbedder` fixture.
+  - Privacy rules: recruiter-facing outputs (candidate cards, application lists) are explicit allowlist models with no CV text, contacts, education, gaps or feedback. Gaps appear only on the developer's own `GET /me/matches/{id}`.
 - **DB:** SQLAlchemy 2 models in `models.py`, all user-owned rows cascade from `users`, so `DELETE /me` wipes everything. Datetimes use `UTCDateTime` (always aware UTC). Enums are non-native with CHECK constraints.
 
 ## Development protocol (applies to every task)

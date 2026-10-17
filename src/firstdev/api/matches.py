@@ -9,12 +9,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from firstdev import auth
+from firstdev.api.applications import VERIFY_MESSAGE
 from firstdev.api.postings import current_recruiter, load_open_posting
 from firstdev.api.profiles import current_profile
 from firstdev.db import get_db
 from firstdev.jobs import enqueue
 from firstdev.matching import embeddings
-from firstdev.matching.profile import build_skill_profile, latest_cv_parse
+from firstdev.matching.profile import build_skill_profile, is_verified, latest_cv_parse
 from firstdev.matching.score import base_score
 from firstdev.matching.vectors import from_blob, top_k
 from firstdev.models import (
@@ -211,6 +212,9 @@ def my_match(
     db: Session = Depends(get_db),
 ) -> MyMatchOut | JobQueued:
     posting = load_open_posting(db, posting_id)
+    # Same gate as applying: otherwise throwaway accounts could spend LLM calls.
+    if not is_verified(db, profile):
+        raise HTTPException(403, VERIFY_MESSAGE)
     sp = build_skill_profile(db, profile)
     ms = db.scalars(
         select(MatchScore).where(
