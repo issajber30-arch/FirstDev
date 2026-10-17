@@ -1,7 +1,8 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 """Deterministic match score. Only skills and tier feed it, never gaps, names or contacts."""
 
-CREDIT = {"repo": 1.0, "cv": 0.6}  # proven in a repo vs claimed in the CV with evidence
+# proven in a repo or by a passed assessment vs claimed in the CV with evidence
+CREDIT = {"repo": 1.0, "assessment": 1.0, "cv": 0.6}
 TIER_FIT = {
     ("junior", "junior"): 1.0,
     ("mid", "mid"): 1.0,

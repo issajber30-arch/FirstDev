@@ -3,12 +3,13 @@
 
 import hashlib
 import json
-from datetime import date
+from datetime import UTC, date, datetime
 
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from firstdev.models import (
+    BadgeSource,
     CvDocument,
     CvParse,
     CvStatus,
@@ -16,6 +17,7 @@ from firstdev.models import (
     JobPosting,
     RepoAnalysis,
     Repository,
+    SkillBadge,
     SkillProfile,
     Tier,
 )
@@ -66,8 +68,8 @@ def _month_total(experience: list[dict], today: date) -> int | None:
 
 def _merge(into: dict[str, dict], skill: str, level: str, years: float | None, source: str | None):
     cur = into.setdefault(skill, {"skill": skill, "level": level, "years": None, "sources": []})
-    if level == "repo":
-        cur["level"] = "repo"  # repo beats cv
+    if level == "repo" or (level == "assessment" and cur["level"] == "cv"):
+        cur["level"] = level  # precedence: repo > assessment > cv
     if years is not None:
         cur["years"] = years if cur["years"] is None else max(cur["years"], years)
     if source and source not in cur["sources"]:
@@ -84,8 +86,11 @@ def latest_cv_parse(db: Session, profile_id: str) -> CvParse | None:
     ).first()
 
 
-def build_skill_profile(db: Session, profile: DeveloperProfile) -> SkillProfile:
-    """Merge CV skills (level cv) with repo evidence (level repo) and upsert the row."""
+def build_skill_profile(
+    db: Session, profile: DeveloperProfile, *, now: datetime | None = None
+) -> SkillProfile:
+    """Merge CV skills (cv), assessment badges (assessment) and repo evidence (repo); upsert."""
+    now = now or datetime.now(UTC)
     merged: dict[str, dict] = {}
     cv = latest_cv_parse(db, profile.user_id)
     cv_data = cv.data if cv else {}
@@ -116,6 +121,17 @@ def build_skill_profile(db: Session, profile: DeveloperProfile) -> SkillProfile:
         for dep in a.metrics.get("dependencies", []):
             if (n := DEPENDENCY_SKILLS.get(str(dep).casefold())) is not None:
                 _merge(merged, n, "repo", None, src)
+
+    # Unexpired assessment badges; an expiring badge changes the fingerprint, so scores go stale.
+    for b in db.scalars(
+        select(SkillBadge).where(
+            SkillBadge.profile_id == profile.user_id, SkillBadge.source == BadgeSource.assessment
+        )
+    ):
+        if (b.expires_at is None or b.expires_at > now) and (
+            n := normalize_skill(b.skill)
+        ) is not None:
+            _merge(merged, n, "assessment", None, None)
 
     skills = sorted(merged.values(), key=lambda e: e["skill"])
     tier = profile.experience_tier

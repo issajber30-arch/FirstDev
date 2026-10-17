@@ -1,4 +1,6 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
+from datetime import UTC, datetime, timedelta
+
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +9,7 @@ from firstdev.jobs import HANDLERS, enqueue, enqueue_embed_profile, run_once
 from firstdev.llm import FakeLLM, get_llm
 from firstdev.matching.explain import Feedback, MatchReview
 from firstdev.models import (
+    BadgeSource,
     CvDocument,
     CvParse,
     CvStatus,
@@ -20,6 +23,7 @@ from firstdev.models import (
     RepoAnalysis,
     Repository,
     Role,
+    SkillBadge,
     User,
 )
 from firstdev.pipelines import match_jobs  # noqa: F401  (registers handlers)
@@ -142,13 +146,18 @@ def test_rank_filters_pool_and_orders_by_score(client, db, factory, user_factory
 
 
 def test_card_has_exact_allowlist(client, db, factory, user_factory, rec, pid):
-    make_dev(db, user_factory, "a@x.com", ["python", "fastapi"], ["python"],
-             gaps=[{"start": "2019-01", "end": "2019-06", "months": 6}])  # fmt: skip
+    dev = make_dev(db, user_factory, "a@x.com", ["python", "fastapi", "sql"], ["python"],
+                   gaps=[{"start": "2019-01", "end": "2019-06", "months": 6}])  # fmt: skip
+    db.add(SkillBadge(profile_id=dev.user_id, skill="fastapi", level=85,
+                      source=BadgeSource.assessment,
+                      expires_at=datetime.now(UTC) + timedelta(days=30)))  # fmt: skip
+    db.commit()
     rank(client, pid, rec["h"])
     drain(factory, FakeLLM([review()]))
     (card,) = candidates(client, pid, rec["h"])
     assert set(card) == CARD_KEYS
-    assert card["verified_skills"] == ["python"] and card["cv_skills"] == ["fastapi"]
+    # verified = repo or assessment level; sql stays a plain CV claim
+    assert card["verified_skills"] == ["fastapi", "python"] and card["cv_skills"] == ["sql"]
     assert card["tier"] == "junior" and card["reasons"] == ["fits well"]
     assert len(card["repos"]) == 1 and set(card["repos"][0]) == REPO_KEYS
     assert card["repos"][0] == {"name": "o/r", "complexity": 3, "summary": "Clean layers."}

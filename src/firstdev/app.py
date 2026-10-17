@@ -3,6 +3,7 @@ from fastapi import FastAPI
 
 from firstdev.api import (
     applications,
+    assessments,
     auth,
     cv,
     invitations,
@@ -40,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(applications.router)
     app.include_router(invitations.router)
     app.include_router(matches.router)
+    app.include_router(assessments.router)
     # Largest legit request is a 5 MB CV plus multipart framing.
     app.add_middleware(BodySizeLimit, max_bytes=PDF_MAX + 64 * 1024)
     return app

@@ -139,7 +139,9 @@ def candidates(
                 profile_id=ms.profile_id,
                 headline=headline,
                 tier=str(sp.tier) if sp else "",
-                verified_skills=[s["skill"] for s in skills if s["level"] == "repo"],
+                verified_skills=[
+                    s["skill"] for s in skills if s["level"] in ("repo", "assessment")
+                ],
                 cv_skills=[s["skill"] for s in skills if s["level"] == "cv"],
                 repos=[
                     RepoCard(**{k: r[k] for k in ("name", "complexity", "summary")}) for r in repos
