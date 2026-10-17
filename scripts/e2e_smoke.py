@@ -107,7 +107,8 @@ def walk(node):
 def register(c: httpx.Client, label: str, role: str = "developer") -> dict[str, str]:
     email = f"{label}-{secrets.token_hex(4)}@example.com"
     pw = secrets.token_urlsafe(16)
-    r = c.post("/auth/register", json={"email": email, "password": pw, "role": role})
+    body = {"email": email, "password": pw, "role": role, "display_name": label}
+    r = c.post("/auth/register", json=body)
     r.raise_for_status()
     r = c.post("/auth/login", json={"email": email, "password": pw})
     r.raise_for_status()
@@ -484,6 +485,8 @@ def main(argv: list[str] | None = None) -> int:
             **{k: v for k, v in keys.items() if v},  # unset keys stay unset
             "FIRSTDEV_DATABASE_URL": f"sqlite:///{tmpd / 'e2e.db'}",
             "FIRSTDEV_JWT_SECRET": secrets.token_urlsafe(48),
+            "FIRSTDEV_REQUIRE_INVITE": "false",  # throwaway DB, no invite codes
+            "FIRSTDEV_COOKIE_SECURE": "false",
         }
         logs = {"server": tmpd / "server.log", "worker": tmpd / "worker.log"}
         phrases: list[str] = []

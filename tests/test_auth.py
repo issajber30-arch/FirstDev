@@ -40,7 +40,12 @@ def test_duplicate_email_case_insensitive(client, register):
     register("a@example.com")
     r = client.post(
         "/auth/register",
-        json={"email": "A@EXAMPLE.com", "password": PASSWORD, "role": "recruiter"},
+        json={
+            "email": "A@EXAMPLE.com",
+            "password": PASSWORD,
+            "role": "recruiter",
+            "display_name": "A",
+        },
     )
     assert r.status_code == 409
     assert "a@example.com" not in r.text.lower()
@@ -61,12 +66,18 @@ def test_duplicate_email_case_insensitive(client, register):
     ],
 )
 def test_register_invalid_422(client, body):
+    body = {"display_name": "Dev", **body}
     assert client.post("/auth/register", json=body).status_code == 422
 
 
 def test_password_boundaries_ok(client):
     for i, n in enumerate((12, 128)):
-        body = {"email": f"b{i}@example.com", "password": "p" * n, "role": "recruiter"}
+        body = {
+            "email": f"b{i}@example.com",
+            "password": "p" * n,
+            "role": "recruiter",
+            "display_name": "B",
+        }
         assert client.post("/auth/register", json=body).status_code == 201
 
 

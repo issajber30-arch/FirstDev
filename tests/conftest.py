@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parent.parent
 # Set before any firstdev import so Settings never depends on the developer's .env.
 os.environ["FIRSTDEV_JWT_SECRET"] = "test-secret-" + "x" * 40
 os.environ["FIRSTDEV_ENV"] = "dev"
+os.environ["FIRSTDEV_REQUIRE_INVITE"] = "false"  # invite tests turn it back on
+os.environ["FIRSTDEV_COOKIE_SECURE"] = "false"  # TestClient speaks plain http
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -54,8 +56,15 @@ PASSWORD = "correct horse battery"
 
 @pytest.fixture
 def register(client):
-    def _register(email="dev@example.com", role="developer", password=PASSWORD):
-        r = client.post("/auth/register", json={"email": email, "password": password, "role": role})
+    def _register(email="dev@example.com", role="developer", password=PASSWORD, **extra):
+        body = {
+            "email": email,
+            "password": password,
+            "role": role,
+            "display_name": email.split("@")[0],
+            **extra,
+        }
+        r = client.post("/auth/register", json=body)
         assert r.status_code == 201, r.text
         return r.json()
 
@@ -63,10 +72,26 @@ def register(client):
 
 
 @pytest.fixture
+def set_env(monkeypatch):
+    """Override FIRSTDEV_* settings for one test (Settings is cached, so clear it both ways)."""
+    from firstdev.config import get_settings
+
+    def _set(**kw):
+        for k, v in kw.items():
+            monkeypatch.setenv(f"FIRSTDEV_{k.upper()}", str(v))
+        get_settings.cache_clear()
+
+    yield _set
+    monkeypatch.undo()
+    get_settings.cache_clear()
+
+
+@pytest.fixture
 def login(client):
     def _login(email="dev@example.com", password=PASSWORD):
         r = client.post("/auth/login", json={"email": email, "password": password})
         assert r.status_code == 200, r.text
+        client.cookies.clear()  # keep existing tests Bearer-only: no ambient cookie session
         return {"Authorization": f"Bearer {r.json()['access_token']}"}
 
     return _login

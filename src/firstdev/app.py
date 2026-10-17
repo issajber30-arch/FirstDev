@@ -15,7 +15,9 @@ from firstdev.api import (
 )
 from firstdev.config import get_settings
 from firstdev.security.body_limit import BodySizeLimit
+from firstdev.security.headers import SecurityHeaders
 from firstdev.security.uploads import PDF_MAX
+from firstdev.sessions import CSRFMiddleware
 
 
 def create_app() -> FastAPI:
@@ -43,7 +45,10 @@ def create_app() -> FastAPI:
     app.include_router(matches.router)
     app.include_router(assessments.router)
     # Largest legit request is a 5 MB CV plus multipart framing.
+    app.add_middleware(CSRFMiddleware)
     app.add_middleware(BodySizeLimit, max_bytes=PDF_MAX + 64 * 1024)
+    # Added last = outermost, so even 403/413 rejections from the middlewares get the headers.
+    app.add_middleware(SecurityHeaders)
     return app
 
 

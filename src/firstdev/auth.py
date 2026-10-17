@@ -1,4 +1,5 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
+import hmac
 import time
 from collections import defaultdict, deque
 from datetime import UTC, datetime, timedelta
@@ -63,13 +64,16 @@ def _unauthorized() -> HTTPException:
 
 
 def current_user(
+    request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    if creds is None:
+    # Bearer first (scripts); otherwise the browser's httpOnly access cookie.
+    token = creds.credentials if creds else request.cookies.get("fd_access")
+    if token is None:
         raise _unauthorized()
     try:
-        user_id = decode_token(creds.credentials)
+        user_id = decode_token(token)
     except jwt.PyJWTError:
         raise _unauthorized() from None
     user = db.get(User, user_id)
@@ -124,10 +128,20 @@ class FailureLimiter:
 login_limiter = FailureLimiter()
 
 
+def client_ip(request: Request) -> str:
+    """The caller's IP. Behind the Next.js proxy the real one arrives in a header, trusted
+    only when the proxy proves itself with the shared secret (X-Forwarded-For is never trusted)."""
+    secret = get_settings().proxy_secret
+    sent = request.headers.get("x-firstdev-proxy-secret", "")
+    if secret and hmac.compare_digest(sent.encode(), secret.get_secret_value().encode()):
+        ip = request.headers.get("x-firstdev-client-ip", "").strip()
+        if ip:
+            return ip[:64]  # bounded: it becomes a limiter key
+    return request.client.host if request.client else "unknown"
+
+
 def limiter_keys(request: Request, email: str) -> tuple[str, str]:
-    # Behind a proxy request.client is the proxy; revisit with trusted forwarded headers.
-    ip = request.client.host if request.client else "unknown"
-    return f"ip:{ip}", f"email:{email}"
+    return f"ip:{client_ip(request)}", f"email:{email}"
 
 
 def get_owned[M](db: Session, model: type[M], obj_id: str, user: User) -> M:

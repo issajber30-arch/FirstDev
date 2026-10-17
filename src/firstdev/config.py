@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from functools import lru_cache
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +13,14 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./firstdev.db"
     jwt_secret: SecretStr  # required: no default, so a missing secret fails at startup
     jwt_ttl_minutes: int = 15
+    refresh_ttl_days: int = 7
+    # Cookies get the Secure flag unless this is false (plain-http localhost development only).
+    cookie_secure: bool = True
+    cookie_path_prefix: str = ""  # "/api" when served behind the Next.js proxy
+    # Real signups need a personal invite code (scripts/invites.py); tests turn this off.
+    require_invite: bool = True
+    # Shared with the Next.js proxy: only requests carrying it may name the client IP.
+    proxy_secret: SecretStr | None = None
     llm_model: str = "claude-opus-5-5"
     llm_effort: str = "medium"
     # Where fastembed caches the embedding model (downloaded once, by the worker only).
@@ -26,6 +34,15 @@ class Settings(BaseSettings):
         if len(v.get_secret_value()) < 32:
             raise ValueError("must be at least 32 characters")
         return v
+
+    @model_validator(mode="after")
+    def _prod_requirements(self) -> "Settings":
+        if self.env == "prod":
+            if self.proxy_secret is None or not self.proxy_secret.get_secret_value():
+                raise ValueError("FIRSTDEV_PROXY_SECRET is required when env is prod")
+            if not self.cookie_secure:
+                raise ValueError("FIRSTDEV_COOKIE_SECURE must be true when env is prod")
+        return self
 
 
 @lru_cache

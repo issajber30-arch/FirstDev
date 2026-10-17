@@ -181,7 +181,40 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(254), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[Role] = mapped_column(_enum(Role, "role"))
+    # Required at the API (register) but nullable in the DB: rows created before Part 4 have none.
+    display_name: Mapped[str | None] = mapped_column(String(60))
     created_at: Mapped[datetime] = _created()
+
+
+class RefreshToken(Base):
+    """One link in a rotating refresh chain; all links of a login share a family_id."""
+
+    __tablename__ = "refresh_tokens"
+
+    id: Mapped[str] = _pk()
+    user_id: Mapped[str] = _fk("users.id")
+    family_id: Mapped[str] = mapped_column(String(36), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)  # sha256 hex; raw never stored
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    used_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    created_at: Mapped[datetime] = _created()
+
+
+class InviteCode(Base):
+    """Single-use signup code; only its sha256 is stored, the code is shown once at creation."""
+
+    __tablename__ = "invite_codes"
+
+    id: Mapped[str] = _pk()
+    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    label: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = _created()
+    used_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    used_by: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL")
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
 
 
 class DeveloperProfile(Base):
