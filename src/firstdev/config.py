@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./firstdev.db"
     jwt_secret: SecretStr  # required: no default, so a missing secret fails at startup
     jwt_ttl_minutes: int = 15
+    llm_model: str = "claude-opus-5-5"
+    llm_effort: str = "medium"
 
     @field_validator("jwt_secret")
     @classmethod
