@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from firstdev import auth
 from firstdev.api.postings import current_recruiter, load_open_posting
 from firstdev.api.profiles import current_profile
+from firstdev.assessments.generate import create_assessment
 from firstdev.db import get_db
 from firstdev.jobs import enqueue
 from firstdev.matching.profile import is_verified
@@ -17,6 +18,7 @@ from firstdev.models import (
     Application,
     ApplicationStatus,
     ApplicationStatusEvent,
+    AssessmentKind,
     DeveloperProfile,
     Invitation,
     InvitationStatus,
@@ -49,6 +51,7 @@ class Queued(BaseModel):
     application_id: str
     status: ApplicationStatus
     job_id: str
+    assessment_id: str | None = None  # set when the posting has auto_assessment on
 
 
 class StatusOut(BaseModel):
@@ -89,7 +92,7 @@ def _log(db: Session, app: Application, to: ApplicationStatus, actor: User) -> N
     app.status = to
 
 
-def _recruiter_application(db: Session, app_id: str, user: User) -> Application:
+def recruiter_application(db: Session, app_id: str, user: User) -> Application:
     """The application if it belongs to one of the recruiter's postings, else 404."""
     app = db.scalar(
         select(Application)
@@ -141,6 +144,12 @@ def apply(
     if invite is not None:
         invite.status = InvitationStatus.accepted
     db.flush()
+    assessment = None
+    if posting.auto_assessment:  # queues its own generation job; commits the application too
+        assessment = create_assessment(
+            db, profile=profile, kind=AssessmentKind.auto, posting=posting, application=app,
+            created_by=None,
+        )  # fmt: skip
     # Ids only: no CV or posting text in the jobs table. enqueue() commits everything.
     job = enqueue(
         db,
@@ -153,7 +162,12 @@ def apply(
             "application_id": app.id,
         },
     )
-    return Queued(application_id=app.id, status=app.status, job_id=job.id)
+    return Queued(
+        application_id=app.id,
+        status=app.status,
+        job_id=job.id,
+        assessment_id=assessment.id if assessment else None,
+    )
 
 
 @router.post("/applications/{app_id}/withdraw", response_model=StatusOut)
@@ -177,7 +191,7 @@ def change_status(
     user: User = Depends(current_recruiter),
     db: Session = Depends(get_db),
 ) -> StatusOut:
-    app = _recruiter_application(db, app_id, user)
+    app = recruiter_application(db, app_id, user)
     if body.status not in ALLOWED_TRANSITIONS.get(app.status, set()):
         raise HTTPException(409, f"cannot move from {app.status} to {body.status}")
     _log(db, app, body.status, user)

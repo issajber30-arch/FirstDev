@@ -46,6 +46,7 @@ class PostingIn(BaseModel):
     currency: str | None = Field(None, pattern=r"^[A-Z]{3}$")
     location: str | None = Field(None, min_length=1, max_length=100)
     remote: bool = False
+    auto_assessment: bool = False  # apply also creates an assessment (LLM cost: opt-in)
     # Create: omitted means draft. Update: omitted keeps the current status.
     status: Literal["draft", "open"] | None = None
 
@@ -73,6 +74,7 @@ class PostingOut(BaseModel):
     status: PostingStatus
     created_at: datetime
     injection_flags: list | None  # owner only; None for other viewers
+    auto_assessment: bool | None = None  # owner only; None for other viewers
 
 
 def current_recruiter(user: User = Depends(auth.current_user)) -> User:
@@ -92,6 +94,7 @@ def _out(posting: JobPosting, *, owner: bool) -> PostingOut:
     out = PostingOut.model_validate(posting)
     if not owner:
         out.injection_flags = None
+        out.auto_assessment = None
     return out
 
 
@@ -116,7 +119,15 @@ def _apply(posting: JobPosting, body: PostingIn) -> None:
     posting.injection_flags = [dataclasses.asdict(f) for f in scan(description, removed)]
     posting.required_skills = required
     posting.optional_skills = optional
-    for f in ("tier", "salary_min", "salary_max", "currency", "location", "remote"):
+    for f in (
+        "tier",
+        "salary_min",
+        "salary_max",
+        "currency",
+        "location",
+        "remote",
+        "auto_assessment",
+    ):
         setattr(posting, f, getattr(body, f))
 
 

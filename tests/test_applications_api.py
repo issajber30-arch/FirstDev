@@ -96,7 +96,10 @@ def test_apply_creates_event_and_score_job(client, db, dev, open_posting):
     r = apply(client, open_posting, dev["h"])
     assert r.status_code == 201, r.text
     b = r.json()
-    assert set(b) == {"application_id", "status", "job_id"} and b["status"] == "submitted"
+    assert (
+        set(b) == {"application_id", "status", "job_id", "assessment_id"}
+        and b["status"] == "submitted"
+    )
     (ev,) = db.scalars(select(ApplicationStatusEvent)).all()
     assert (ev.from_status, ev.to_status, ev.actor_id) == (
         None,

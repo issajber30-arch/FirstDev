@@ -14,13 +14,13 @@ Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. Author: Is
 - `uv run alembic upgrade head` — create/upgrade the SQLite DB (`FIRSTDEV_DATABASE_URL`)
 - `uv run alembic revision --autogenerate -m "..." --rev-id 000N` — new migration; then replace any `firstdev.models.UTCDateTime` with `sa.DateTime(timezone=True)`. `tests/test_migrations.py` fails if models and migrations drift.
 - `uv run uvicorn firstdev.app:app --reload` — API; `uv run python -m firstdev.worker` — background worker (needed for CV/repo jobs)
-- `uv run python scripts/e2e_smoke.py --yes` — real Claude + GitHub end-to-end (needs `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`; costs money — ask first)
+- `uv run python scripts/e2e_smoke.py --yes [--part2|--part3]` — real Claude + GitHub end-to-end (needs `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`; costs money — ask first)
 
 Git hooks live in `.githooks` (`core.hooksPath`): pre-commit scans staged content for secrets, blocks `.env` and runs ruff; post-commit writes an Obsidian note. `FIRSTDEV_JWT_SECRET` (≥32 chars) is required; tests set it in `tests/conftest.py`.
 
 ## Architecture
 
-Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Parser, Repo-Analyzer. Part 2 = postings, applications, Job-Matcher. Assessment-Gen (Part 3) and the frontend come later.
+Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Parser, Repo-Analyzer. Part 2 = postings, applications, Job-Matcher. Part 3 = assessments (spec `docs/specs/2026-10-17-part3-design.md`). The frontend comes later.
 
 - **Two processes, one SQLite DB.** The FastAPI API (`app.py`, routers in `api/`) writes a `jobs` row and returns 202. The worker (`worker.py` → `jobs.worker_main`) claims jobs atomically (`UPDATE … RETURNING`, single worker only) and dispatches by `JobKind` through `jobs.HANDLERS`. Pipelines register their handler (and optional `FAILURE_HOOKS` entry) at import, and `worker.py` imports them. Retries happen only for `errors.TransientError` subclasses, with backoff via `jobs.run_after`, max 3 attempts. `last_error` only ever holds firstdev's own messages.
 - **Pipelines** (`pipelines/cv_parser.py`, `pipelines/repo_analyzer.py`) share one pattern: sanitize (`security/sanitize.py`) → heuristic `injection.scan` flags (stored, never blocking) → `wrap_untrusted(...)` delimiters → `llm.extract(schema, SYSTEM_PROMPT, content)` (structured output, no tools) → post-validation in code (evidence quotes/paths must exist in the source, clamps, caps). Deterministic facts (CV gaps, repo metrics, tutorial heuristics) are computed in code, never by the LLM.
@@ -38,6 +38,7 @@ Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Par
   - `match_scores` are cached and treated as stale when the skill-profile or posting fingerprint changes.
   - The embedding model (fastembed `paraphrase-multilingual-MiniLM-L12-v2`, cached in `~/.cache/firstdev/models`) loads only in the worker. Tests use the autouse `FakeEmbedder` fixture.
   - Privacy rules: recruiter-facing outputs (candidate cards, application lists) are explicit allowlist models with no CV text, contacts, education, gaps or feedback. Gaps appear only on the developer's own `GET /me/matches/{id}`.
+- **Assessments (Part 3).** Created by a recruiter (`POST /applications/{id}/assessment`), automatically on apply (posting `auto_assessment`) or as developer practice (verified profile only, 3/day, 7-day per-skill cooldown). Lifecycle: `generating` (worker job, one LLM call) → `ready` → `in_progress` (20-minute deadline, finalized lazily on access) → `submitted` → `graded` (`failed`/`expired` otherwise). Answer keys (`correct_index`, rubric, explanation, model answer) live only in `assessment_questions`; candidate and recruiter responses are allowlist models, and the developer report appears only once graded. Grading is code: MCQs are compared in `grade.py`, short answers get a rubric-based LLM verdict that is validated and clamped in code, and no route calls the LLM in-request. A skill scoring ≥ 70% writes a `skill_badges` row with source `assessment`, which `build_skill_profile` merges at level `assessment` (repo > assessment > cv).
 - **DB:** SQLAlchemy 2 models in `models.py`, all user-owned rows cascade from `users`, so `DELETE /me` wipes everything. Datetimes use `UTCDateTime` (always aware UTC). Enums are non-native with CHECK constraints.
 
 ## Development protocol (applies to every task)

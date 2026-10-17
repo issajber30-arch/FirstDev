@@ -37,6 +37,13 @@ def test_part2_refuses_without_yes(tmp_path):
     assert "PASS" not in r.stdout
 
 
+def test_part3_refuses_without_yes(tmp_path):
+    r = run(["--part3"], tmp_path=tmp_path)
+    assert r.returncode == 2
+    assert "part 3" in r.stdout
+    assert "PASS" not in r.stdout
+
+
 def test_missing_keys_listed_without_values(tmp_path):
     empty = tmp_path / "empty.env"
     empty.write_text("")
