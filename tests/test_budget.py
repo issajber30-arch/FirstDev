@@ -142,9 +142,9 @@ def test_budget_exceeded_is_permanent_with_safe_message():
 
 
 def test_estimate_worst_case():
-    # (len//3 + 1) input tokens at $4/MTok plus max_tokens at $20/MTok
+    # Priced at the most expensive known model ($5 / $25), so a server-side fallback is covered.
     assert budget.estimate_worst_usd("a" * 300, "b" * 300, 1000) == pytest.approx(
-        (201 * 4 + 1000 * 20) / 1_000_000
+        (201 * 5 + 1000 * 25) / 1_000_000
     )
 
 

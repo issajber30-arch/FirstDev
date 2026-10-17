@@ -20,7 +20,14 @@ if TYPE_CHECKING:
 log = logging.getLogger("firstdev.llm")
 
 # USD per million tokens (input, output). The only place prices live.
-PRICES: dict[str, tuple[float, float]] = {"claude-opus-5-5": (4.0, 20.0)}
+# $ per MTok (input, output). Server-side fallbacks can answer with another model, so the
+# likely fallback targets are listed too; unknown models use the most expensive entry.
+PRICES: dict[str, tuple[float, float]] = {
+    "claude-opus-5-5": (4.0, 20.0),
+    "claude-opus-5": (5.0, 25.0),
+    "claude-opus-4-8": (5.0, 25.0),
+    "claude-sonnet-5-5": (2.0, 10.0),
+}
 
 
 def cost_usd(model: str | None, input_tokens: int, output_tokens: int) -> float:
