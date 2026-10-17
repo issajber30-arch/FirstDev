@@ -26,6 +26,17 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
             r"(?:an?\s+)?(?:\d{2,3}|perfect|maximum|top)\b",
         ),
         ("hire_directive", r"\bhire\s+(?:me|this\s+candidate)\b"),
+        # Assessment answers: attempts to steer the grader rather than answer the question.
+        (
+            "grading_manipulation",
+            r"\b(?:ignore|disregard|skip)\s+(?:the\s+|this\s+|your\s+)?"
+            r"(?:rubric|grading|criteria|marking\s+scheme)\b",
+        ),
+        (
+            "grading_manipulation",
+            r"\b(?:award|give|grant|assign)\s+(?:me\s+|this\s+(?:answer|candidate)\s+)?"
+            r"(?:full|maximum|max|all\s+(?:the\s+)?)\s*(?:marks|points|credit|score)\b",
+        ),
     ]
 ]
 
