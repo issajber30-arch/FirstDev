@@ -1,0 +1,76 @@
+/* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
+@import "tailwindcss";
+
+/* Design tokens: docs/design-system.md. Dark mode first (the only mode). */
+:root {
+  --bg-base: #0b0f19;
+  --bg-surface: #111827;
+  --accent-primary: #00f2fe;
+  --accent-verified: #ffb703;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --warning: #fb923c;
+  --border-glass: rgb(248 250 252 / 0.1);
+  --glow-cyan: 0 0 24px rgb(0 242 254 / 0.25);
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-verified: var(--accent-verified);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-warning: var(--warning);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  /* City-grid: two faint line layers plus a cyan haze from the top. */
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgb(0 242 254 / 0.08), transparent),
+    linear-gradient(rgb(248 250 252 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(248 250 252 / 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 48px 48px, 48px 48px;
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
+/* Glass card: translucent surface, 1px border, faint cyan glow on hover or focus. */
+.glass {
+  background: rgb(17 24 39 / 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(12px);
+  transition:
+    border-color var(--motion-base) ease,
+    box-shadow var(--motion-base) ease;
+}
+.glass:hover,
+.glass:focus-within {
+  border-color: rgb(0 242 254 / 0.5);
+  box-shadow: var(--glow-cyan);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

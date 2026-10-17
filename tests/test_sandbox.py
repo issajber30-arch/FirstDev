@@ -742,3 +742,15 @@ def test_sweep_failure_does_not_kill_the_worker(monkeypatch, factory):
     monkeypatch.setattr(jobs, "requeue_stale", lambda db: 0)
     monkeypatch.setattr(jobs, "sweep_expired", boom)
     jobs.worker_main(factory, FakeLLM([]), handlers={})  # returns normally
+
+
+def test_me_reports_sandbox_without_world_id(client, register, login):
+    register()
+    plain = client.get("/me", headers=login()).json()
+    assert plain["sandbox"] is False and plain["expires_at"] is None
+
+    r = client.post("/demo/sandbox", json={"role": "developer", "turnstile_token": "t"})
+    assert r.status_code == 201
+    me = client.get("/me").json()  # cookie session
+    assert me["sandbox"] is True and me["expires_at"] is not None
+    assert "world_id" not in me

@@ -1,0 +1,12 @@
+<!-- Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 72" width="64" height="35" fill="none">
+  <rect width="132" height="72" rx="8" fill="#0B0F19"/>
+  <g stroke="#00F2FE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 62 V14 H34 M12 38 H28"/>
+    <path d="M44 62 V26 H52 Q68 26 68 44 Q68 62 52 62 Z"/>
+    <path d="M68 62 H72 V46 H80 V38 H88"/>
+    <path d="M100 8 L89 22 L100 36"/>
+    <path d="M104 36 L112 8"/>
+    <path d="M116 8 L127 22 L116 36"/>
+  </g>
+</svg>

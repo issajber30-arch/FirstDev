@@ -1,8 +1,9 @@
 # Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
+from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -61,6 +62,22 @@ class UserOut(BaseModel):
     email: str
     role: Role
     display_name: str | None
+    sandbox: bool = False  # world_id itself is never exposed
+    expires_at: datetime | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_user(cls, v: object) -> object:
+        if isinstance(v, User):
+            return {
+                "id": v.id,
+                "email": v.email,
+                "role": v.role,
+                "display_name": v.display_name,
+                "sandbox": v.world_id is not None,
+                "expires_at": v.expires_at,
+            }
+        return v
 
 
 @router.post("/auth/register", response_model=UserOut, status_code=201)

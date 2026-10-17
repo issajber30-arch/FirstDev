@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "title": "FirstDev",
+    "description": "Hiring where every skill is verified: CV, GitHub repos and assessments."
+  },
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "language": "Language",
+    "loading": "Loading…",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "landing": {
+    "tagline": "Skills you can verify, not just claim.",
+    "subtitle": "FirstDev checks a developer's CV against real code and short assessments, so recruiters see what is proven and what is only written down.",
+    "tryDeveloper": "Try as developer",
+    "tryRecruiter": "Try as recruiter",
+    "demoNote": "A private demo sandbox is created just for you and deleted after 24 hours. No sign-up needed.",
+    "demoCreating": "Preparing your sandbox…",
+    "demoError": "Could not start the demo. Please try again.",
+    "demoLimit": "Demo limit reached for today. Please try again tomorrow.",
+    "how": {
+      "title": "How verification works",
+      "step1Title": "1. CV",
+      "step1Body": "The CV is parsed into skills and experience. These start as claims, shown in grey.",
+      "step2Title": "2. GitHub repos",
+      "step2Body": "Repositories are analysed for languages, tests, CI and dependencies. Skills backed by real code turn amber.",
+      "step3Title": "3. Assessments",
+      "step3Body": "Short timed assessments confirm a skill. A score of 70% or more earns a verified badge."
+    }
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "joinTitle": "Join with an invite",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 12 characters",
+    "displayName": "Display name",
+    "inviteCode": "Invite code",
+    "role": "I am a",
+    "roleDeveloper": "Developer",
+    "roleRecruiter": "Recruiter",
+    "submitSignIn": "Sign in",
+    "submitJoin": "Create account",
+    "submitting": "Please wait…",
+    "noAccount": "Have an invite code?",
+    "haveAccount": "Already have an account?",
+    "invalidCredentials": "Wrong email or password.",
+    "tooMany": "Too many attempts. Try again later.",
+    "invalidInvite": "This invite code is not valid.",
+    "registrationFailed": "Registration failed. Check your details; the email may already be in use.",
+    "invalidInput": "Please check the form: name up to 60 characters, password at least 12."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Signed in as {name}"
+  },
+  "sandbox": {
+    "banner": "Demo sandbox — expires in {time}",
+    "expired": "Demo sandbox — expired"
+  }
+}
