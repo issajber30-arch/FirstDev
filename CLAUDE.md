@@ -18,6 +18,10 @@ Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. Author: Is
 - `uv run python scripts/e2e_smoke.py --yes --part4 --fake` — Part 4 only (sandboxes, cookies/CSRF, invites, public profiles, connections, refresh); `--fake` uses `CannedLLM`, free, no `ANTHROPIC_API_KEY`. Without `--fake` it uses real Claude and also checks the budget ledger (costs money — ask first)
 - `uv run python scripts/invites.py create --label NAME | list | revoke` — signup invite codes (code shown once)
 
+- `scripts/dev.sh [--real]` — API + worker + web on http://localhost:3000 (fake AI unless `--real`)
+- `scripts/web-e2e.sh [--lighthouse]` — Playwright (dev screens, assessments/recruiter, a11y, security) against an isolated production build on :3100/:8100
+- Web: `npm --prefix web run lint`, `npx --prefix web tsc --noEmit -p web`, `npm --prefix web test -- --run`. Read `web/AGENTS.md` first: this Next.js version has breaking changes.
+
 Git hooks live in `.githooks` (`core.hooksPath`): pre-commit scans staged content for secrets, blocks `.env` and runs ruff; post-commit writes an Obsidian note. `FIRSTDEV_JWT_SECRET` (≥32 chars) is required; tests set it in `tests/conftest.py`.
 
 ## Architecture
@@ -34,6 +38,7 @@ Spec: `docs/specs/2026-10-17-part1-design.md`. Part 1 = backend, schemas, CV-Par
   - Job payloads carry ids only, never user content.
   - **Worlds:** real users have `world_id` NULL, and each demo sandbox has its own world. Any query that returns or matches *another* user's data must go through `worlds.same_world` (or `in_world`), and anything outside the caller's world is a plain 404. `tests/test_world_isolation.py` must cover every new cross-user route.
   - **Sessions:** browsers use httpOnly cookies (`fd_access`, `fd_refresh`, `fd_csrf`), and every cookie-authenticated write needs `X-CSRF-Token`. Bearer stays for scripts and tests. `FIRSTDEV_COOKIE_PATH_PREFIX=/api` behind the Next.js proxy.
+  - **Client IP behind the proxy:** the Next.js proxy forwards an IP only from the entry appended by a trusted front end (`FIRSTDEV_TRUSTED_PROXY_HOPS`, 0 locally, so it is ignored). Never trust the first `X-Forwarded-For` entry, which the client controls.
   - **LLM budget:** every real Claude call reserves its worst-case cost in `llm_ledger` (`budget.py`) and is refused before the call once `FIRSTDEV_LLM_DAILY_USD` would be exceeded. `FIRSTDEV_LLM_MODE=fake` uses `CannedLLM` (refused in prod).
 - **Matching (Part 2, spec `docs/specs/2026-10-17-part2-design.md`).** Recall → score → explain:
   - `matching/profile.build_skill_profile` merges CV skills (`cv`, 0.6 credit) with repo evidence (`repo`, 1.0). Repo evidence comes from languages ≥ 2 KB and manifest dependencies. Repos with `tutorial_likelihood` ≥ 0.7 prove nothing.

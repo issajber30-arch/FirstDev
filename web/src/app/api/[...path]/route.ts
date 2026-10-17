@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
 // Same-origin proxy to the FastAPI backend: /api/x -> FIRSTDEV_API_URL/x. Keeps cookies
 // first-party (no CORS) and lets the backend trust the client IP via a shared secret.
+import { clientIp } from "@/lib/clientIp";
 import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
@@ -56,7 +57,8 @@ async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] 
   }
   const secret = process.env.FIRSTDEV_PROXY_SECRET;
   if (secret) headers.set("x-firstdev-proxy-secret", secret);
-  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim();
+  // Never trust the client's own X-Forwarded-For entries (see lib/clientIp).
+  const ip = clientIp(req.headers.get("x-forwarded-for"));
   if (ip) headers.set("x-firstdev-client-ip", ip);
 
   let body: Uint8Array | null = null;

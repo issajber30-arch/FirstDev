@@ -32,19 +32,12 @@ async function noOverflow(page: Page) {
   expect(over, "horizontal page overflow (px)").toBeLessThanOrEqual(0);
 }
 
-// The API allows 3 demo sandboxes per client IP per day. The Next.js dev proxy takes the IP from the first
-// X-Forwarded-For entry, so each test names its own (RFC 5737 range) and reruns do not hit the limit.
-const runId = Math.floor(Math.random() * 250) + 1;
-let ipSeq = 0;
-const ownIp = (page: Page) => page.context().setExtraHTTPHeaders({ "x-forwarded-for": `198.51.${runId}.${++ipSeq}` });
-
 for (const locale of LOCALES) {
   const m = MSG[locale];
 
   test(`developer: practice assessment end to end [${locale}]`, async ({ page }) => {
     test.setTimeout(300_000);
     const problems = watch(page);
-    await ownIp(page);
     await page.goto(`/${locale}`);
     await page.getByRole("button", { name: m.landing.tryDeveloper }).click();
     await page.waitForURL(`**/${locale}/dev`);
@@ -106,7 +99,6 @@ for (const locale of LOCALES) {
   test(`recruiter: postings, applicants, candidates, create [${locale}]`, async ({ page }) => {
     test.setTimeout(300_000);
     const problems = watch(page, [/\/applications\/[^/]+\/assessment$/]); // 404 = "no assessment sent"
-    await ownIp(page);
     await page.goto(`/${locale}`);
     await page.getByRole("button", { name: m.landing.tryRecruiter }).click();
     await page.waitForURL(`**/${locale}/rec`);

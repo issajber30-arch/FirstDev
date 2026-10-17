@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     refresh_ttl_days: int = 7
     # Cookies get the Secure flag unless this is false (plain-http localhost development only).
     cookie_secure: bool = True
+    # 3 in production; local dev/tests raise it because every local visitor shares one IP.
+    sandbox_per_ip_per_day: int = 3
     cookie_path_prefix: str = ""  # "/api" when served behind the Next.js proxy
     # Real signups need a personal invite code (scripts/invites.py); tests turn this off.
     require_invite: bool = True

@@ -20,8 +20,6 @@ from firstdev.models import SandboxCreation
 router = APIRouter()
 log = logging.getLogger("firstdev.demo")
 
-PER_IP_PER_DAY = 3
-
 
 class SandboxIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -55,7 +53,7 @@ def create_sandbox(
         .select_from(SandboxCreation)
         .where(SandboxCreation.ip_hash == h, SandboxCreation.created_at > since)
     )
-    if recent >= PER_IP_PER_DAY:
+    if recent >= get_settings().sandbox_per_ip_per_day:
         raise HTTPException(429, "sandbox limit reached for today, try again tomorrow")
     try:
         user = clone.create_sandbox(db, body.role, h)

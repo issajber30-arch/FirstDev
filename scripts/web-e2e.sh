@@ -16,6 +16,9 @@ export FIRSTDEV_JWT_SECRET=$(openssl rand -hex 32)
 export FIRSTDEV_DATABASE_URL="sqlite:///$tmp/e2e.db"
 export FIRSTDEV_LLM_MODE=fake
 export FIRSTDEV_TURNSTILE_DISABLED=true
+# Local: every visitor is 127.0.0.1 and X-Forwarded-For is untrusted (no proxy in front).
+export FIRSTDEV_SANDBOX_PER_IP_PER_DAY=100
+export FIRSTDEV_TRUSTED_PROXY_HOPS=0
 export FIRSTDEV_REQUIRE_INVITE=true
 export FIRSTDEV_COOKIE_SECURE=false
 export FIRSTDEV_COOKIE_PATH_PREFIX=/api

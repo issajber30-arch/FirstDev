@@ -4,7 +4,11 @@ import { expect, test, type Page } from "@playwright/test";
 import en from "../src/messages/en.json";
 
 // Assessment and recruiter pages (M21) are appended here as [role, path] pairs.
-const M21_PAGES: [("dev" | "rec"), string][] = [];
+const M21_PAGES: [("dev" | "rec"), string][] = [
+  ["dev", "/dev/assessments"],
+  ["rec", "/rec"],
+  ["rec", "/rec/postings/new"],
+];
 
 const PUBLIC = ["/en", "/he", "/en/sign-in", "/he/sign-in", "/en/join", "/he/join"];
 const DEV = ["", "/profile", "/cv", "/repos", "/jobs", "/applications", "/invitations", "/connections"].map((p) => `/dev${p}`);

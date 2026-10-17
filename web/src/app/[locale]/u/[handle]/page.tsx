@@ -1,4 +1,5 @@
 /* Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. */
+import { clientIp } from "@/lib/clientIp";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -20,7 +21,7 @@ async function load(handle: string): Promise<Profile | "missing" | "limited" | "
   const h: Record<string, string> = { accept: "application/json" };
   const secret = process.env.FIRSTDEV_PROXY_SECRET;
   if (secret) h["x-firstdev-proxy-secret"] = secret;
-  const ip = ((await headers()).get("x-forwarded-for") ?? "").split(",")[0]?.trim();
+  const ip = clientIp((await headers()).get("x-forwarded-for"));
   if (ip) h["x-firstdev-client-ip"] = ip;
   try {
     const res = await fetch(`${base}/u/${encodeURIComponent(handle)}`, {
