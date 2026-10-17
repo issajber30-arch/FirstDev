@@ -76,3 +76,12 @@ def login(client):
 def dev_headers(register, login):
     register()
     return login()
+
+
+@pytest.fixture(autouse=True)
+def _no_retry_backoff(request, monkeypatch):
+    # Retried jobs are claimable immediately in tests unless a test checks backoff itself.
+    if "backoff" not in request.keywords:
+        from firstdev import jobs
+
+        monkeypatch.setattr(jobs, "retry_delay", lambda exc, attempts: 0)

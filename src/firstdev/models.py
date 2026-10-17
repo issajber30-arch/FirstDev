@@ -313,4 +313,5 @@ class Job(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     last_error: Mapped[str | None] = mapped_column(Text)
     locked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    run_after: Mapped[datetime | None] = mapped_column(UTCDateTime())  # retry backoff
     created_at: Mapped[datetime] = _created()

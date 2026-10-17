@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session
 
 from firstdev.errors import TransientError
@@ -16,6 +16,8 @@ from firstdev.models import Job, JobKind, JobStatus, User
 log = logging.getLogger("firstdev.jobs")
 
 MAX_ATTEMPTS = 3
+BACKOFF_BASE_SECONDS = 30
+MAX_BACKOFF_SECONDS = 60 * 60
 Handler = Callable[[Session, Job, LLM], None]
 # Pipelines (M3/M4) register themselves here.
 HANDLERS: dict[JobKind, Handler] = {}
@@ -34,7 +36,10 @@ def claim_next(db: Session, *, now: datetime | None = None) -> Job | None:
     # shortcut: single worker only; upgrade to Postgres SKIP LOCKED when we need >1 worker.
     oldest = (
         select(Job.id)
-        .where(Job.status == JobStatus.queued)
+        .where(
+            Job.status == JobStatus.queued,
+            or_(Job.run_after.is_(None), Job.run_after <= (now or datetime.now(UTC))),
+        )
         .order_by(Job.created_at)
         .limit(1)
         .scalar_subquery()
@@ -90,6 +95,12 @@ def requeue_stale(db: Session, *, older_than: timedelta = timedelta(minutes=10))
     return len(stale)
 
 
+def retry_delay(exc: TransientError, attempts: int) -> float:
+    """Exponential backoff, but never sooner than the remote service asked for."""
+    backoff = BACKOFF_BASE_SECONDS * 2 ** (attempts - 1)
+    return min(max(backoff, exc.retry_after or 0), MAX_BACKOFF_SECONDS)
+
+
 def _safe_error(exc: Exception) -> str:
     # Only our own exception types carry vetted messages; third-party text may echo user data.
     if isinstance(exc, LLMError | GitHubError | ValueError) and type(exc).__module__.startswith(
@@ -105,7 +116,7 @@ def run_once(db_factory: Callable[[], Session], handlers: dict[JobKind, Handler]
         if job is None:
             return False
         job_id, kind = job.id, job.kind
-        status, error = JobStatus.done, None
+        status, error, run_after = JobStatus.done, None, None
         try:
             handler = handlers.get(kind)
             if handler is None:
@@ -116,13 +127,15 @@ def run_once(db_factory: Callable[[], Session], handlers: dict[JobKind, Handler]
             error = _safe_error(exc)
             retry = isinstance(exc, TransientError) and job.attempts < MAX_ATTEMPTS
             status = JobStatus.queued if retry else JobStatus.failed
+            if retry:
+                run_after = datetime.now(UTC) + timedelta(seconds=retry_delay(exc, job.attempts))
             log.warning("job %s kind=%s failed: %s", job_id, kind, error)
         # Status goes in its own transaction so a handler crash can't lose it.
         # A plain UPDATE matches 0 rows if the owner deleted their account mid-run.
         db.execute(
             update(Job)
             .where(Job.id == job_id)
-            .values(status=status, last_error=error, locked_at=None)
+            .values(status=status, last_error=error, locked_at=None, run_after=run_after)
             .execution_options(synchronize_session=False)
         )
         db.commit()

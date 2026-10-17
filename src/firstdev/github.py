@@ -85,7 +85,8 @@ class GitHubClient:
         if code in (403, 429):
             h = resp.headers
             if h.get("x-ratelimit-remaining") == "0" or "retry-after" in h:
-                raise GitHubTransientError(f"rate limited; resets in {_reset_seconds(h)}s")
+                wait = _reset_seconds(h)
+                raise GitHubTransientError(f"rate limited; resets in {wait}s", retry_after=wait)
             raise GitHubError("access denied")
         if code >= 500:
             raise GitHubTransientError("GitHub server error")

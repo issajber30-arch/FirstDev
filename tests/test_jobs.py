@@ -176,3 +176,46 @@ def test_worker_survives_iteration_error(monkeypatch, factory):
     monkeypatch.setattr(jobs.time, "sleep", lambda s: None)
     jobs.worker_main(factory, FakeLLM([]), handlers={})
     assert calls["n"] == 2
+
+
+@pytest.mark.backoff
+def test_transient_failure_backs_off(db, user, factory):
+    from firstdev.errors import TransientError
+
+    j = enqueue(db, user, JobKind.cv_parse, {})
+
+    def boom(d, job, llm):
+        raise LLMTransientError("busy")
+
+    before = datetime.now(UTC)
+    run_once(factory, {JobKind.cv_parse: boom}, FakeLLM([]))
+    with factory() as s:
+        job = s.get(Job, j.id)
+        assert job.status == JobStatus.queued
+        assert job.run_after >= before + timedelta(seconds=30)
+    # Not claimable until run_after passes, then claimable.
+    with factory() as s:
+        assert claim_next(s) is None
+    with factory() as s:
+        assert claim_next(s, now=datetime.now(UTC) + timedelta(seconds=31)).id == j.id
+
+    from firstdev.jobs import retry_delay
+
+    assert retry_delay(TransientError(), 1) == 30
+    assert retry_delay(TransientError(), 2) == 60
+    assert retry_delay(TransientError(retry_after=900), 1) == 900  # honour the service's reset
+    assert retry_delay(TransientError(retry_after=10**6), 1) == 3600  # capped at 1h
+
+
+def test_github_rate_limit_carries_retry_after():
+    import respx
+
+    from firstdev.github import GitHubClient, GitHubTransientError
+
+    with respx.mock(base_url="https://api.github.com") as m:
+        m.get("/repos/o/r").respond(
+            403, headers={"x-ratelimit-remaining": "0", "retry-after": "120"}
+        )
+        with pytest.raises(GitHubTransientError) as e:
+            GitHubClient().repo("o", "r")
+    assert e.value.retry_after == 120
