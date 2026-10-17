@@ -13,12 +13,12 @@ FirstDev is a LinkedIn-style network for junior and mid-level developers. It che
 
 Job-Matcher, Assessment-Gen, the frontend and the brand/logo come in later parts.
 
-`/Users/3isa./FirstDev` is empty: just CLAUDE.md, no git, no code. Nothing exists to reuse.
+the project folder is empty: just CLAUDE.md, no git, no code. Nothing exists to reuse.
 
 **Decisions made with the user:**
 - Stack: Python + FastAPI.
 - Database: SQLite through SQLAlchemy and Alembic, so moving to Postgres later is a config change.
-- Obsidian log location: `~/Desktop/mywebsite/fort nox/Claude Log/FirstDev/`.
+- Obsidian log location: the Obsidian vault folder set by `FIRSTDEV_OBSIDIAN_LOG_DIR`.
 
 **Environment:**
 - Python 3.14.7 and uv are installed.
