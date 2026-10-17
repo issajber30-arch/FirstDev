@@ -541,5 +541,10 @@
     "notFoundTitle": "Profile not found",
     "notFoundBody": "This profile does not exist or is not public.",
     "home": "Back to FirstDev"
+  },
+  "footer": {
+    "tagline": "Skills you can verify, not just claim.",
+    "copyright": "© {year} Issa Jber. All rights reserved.",
+    "creator": "Created by Issa Jber."
   }
 }

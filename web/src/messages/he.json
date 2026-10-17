@@ -541,5 +541,10 @@
     "notFoundTitle": "הפרופיל לא נמצא",
     "notFoundBody": "הפרופיל הזה לא קיים או שאינו ציבורי.",
     "home": "חזרה ל-FirstDev"
+  },
+  "footer": {
+    "tagline": "מיומנויות שאפשר לאמת, לא רק לטעון.",
+    "copyright": "© {year} Issa Jber. כל הזכויות שמורות.",
+    "creator": "נוצר על ידי Issa Jber."
   }
 }

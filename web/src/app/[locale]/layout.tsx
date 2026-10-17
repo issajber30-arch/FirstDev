@@ -5,6 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { SiteFooter } from "@/components/app/SiteFooter";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -26,8 +27,11 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       dir={locale === "he" ? "rtl" : "ltr"}
       className={`${inter.variable} ${mono.variable}`}
     >
-      <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      <body className="flex min-h-dvh flex-col">
+        <NextIntlClientProvider>
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
