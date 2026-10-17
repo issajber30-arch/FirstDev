@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform. -->
+
 # FirstDev — Part 1 Technical Architecture Plan
 
 ## Context
@@ -180,8 +182,6 @@ Each milestone runs this loop:
 
 Job-Matcher/vector DB, Assessment-Gen, job posting and application endpoints, frontend/brand/logo (the brand notes are saved in the spec), OCR, private repos, multiple workers/Postgres, and deployment.
 
-## Brand notes (for later parts)
+## Brand and design system (for later parts)
 
-- Brand aesthetic: modern, high-tech, urban, raw yet sophisticated (city grids, modern architecture, neon lights, clean terminal/code syntax).
-- Logo: a sharp "FD" monogram or interconnected network node integrated into an urban city grid / skyline silhouette made of code brackets (`< />`).
-- Dark mode palette: slate gray, cyber cyan, metallic silver, industrial yellow accents.
+See `docs/design-system.md` (palette, typography, motifs, logo concept).

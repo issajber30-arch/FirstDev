@@ -1,12 +1,21 @@
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 [project]
 name = "firstdev"
 version = "0.1.0"
 description = "FirstDev: network for junior and mid-level developers"
+authors = [{ name = "Issa Jber" }]
+license = { text = "Proprietary. Copyright (c) 2026 Issa Jber. All rights reserved." }
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic-settings",
+    "sqlalchemy>=2.1.5",
+    "alembic>=1.20.0",
+    "argon2-cffi>=25.1.0",
+    "pyjwt>=2.15.1",
+    "email-validator>=2.3.0",
 ]
 
 [dependency-groups]
@@ -15,6 +24,7 @@ dev = [
     "httpx",
     "ruff",
     "pip-audit",
+    "httpx2>=2.13.1",
 ]
 
 [build-system]
@@ -30,8 +40,12 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends"]
+
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S603", "S607"]
+"tests/**" = ["S101", "S105", "S106", "S603", "S607"]
+"migrations/versions/*" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

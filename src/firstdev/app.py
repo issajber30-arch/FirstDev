@@ -1,5 +1,7 @@
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from fastapi import FastAPI
 
+from firstdev.api import auth, profiles
 from firstdev.config import get_settings
 
 
@@ -17,6 +19,8 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    app.include_router(auth.router)
+    app.include_router(profiles.router)
     return app
 
 

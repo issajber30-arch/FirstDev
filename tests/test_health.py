@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 from fastapi.testclient import TestClient
 
 from firstdev.app import create_app

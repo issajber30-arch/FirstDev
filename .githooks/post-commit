@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 # Writes an Obsidian note for the commit. Must never fail the commit.
 subject=$(git log -1 --format=%s)
 body=$(printf '%s\n\nCommit: %s\n\nFiles:\n%s' \

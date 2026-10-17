@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 """Write a progress note into the Obsidian vault. Stdlib only; never fails a commit."""
 
 import argparse
@@ -48,6 +49,8 @@ def main(argv: list[str] | None = None) -> int:
     # Title lives only in the (sanitized) filename, so it can't break the frontmatter.
     text = (
         f"---\ndate: {now:%Y-%m-%d %H:%M:%S}\nkind: {args.kind}\nproject: FirstDev\n"
+        "author: Issa Jber\n"
+        "copyright: (c) 2026 Issa Jber. All rights reserved.\n"
         f"tags: [firstdev, {args.kind}]\n---\n\n{args.body}\n"
     )
     n = 0

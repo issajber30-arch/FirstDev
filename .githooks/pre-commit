@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2026 Issa Jber. All rights reserved. FirstDev Platform.
 # Blocks secrets and .env, then lints. SKIP_RUFF=1 skips lint (used by hook tests).
 set -eu
 
