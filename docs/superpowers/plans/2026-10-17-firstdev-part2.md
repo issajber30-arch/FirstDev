@@ -114,28 +114,67 @@ Existing helpers to reuse (do not reimplement):
 def test_embedding_requires_exactly_one_owner(db, user_factory):
     from sqlalchemy.exc import IntegrityError
     from firstdev.models import Embedding, OwnerKind
-    db.add(Embedding(owner_kind=OwnerKind.profile, profile_id=None, posting_id=None,
-                     model="m", dim=3, vector=b"\x00" * 12, source_fingerprint="f"))
+
+    db.add(
+        Embedding(
+            owner_kind=OwnerKind.profile,
+            profile_id=None,
+            posting_id=None,
+            model="m",
+            dim=3,
+            vector=b"\x00" * 12,
+            source_fingerprint="f",
+        )
+    )
     with pytest.raises(IntegrityError):
         db.commit()
 
 
 def test_match_score_unique_and_cascades_on_posting_delete(db, posting, profile):
     from firstdev.models import MatchScore
-    db.add(MatchScore(posting_id=posting.id, profile_id=profile.user_id, score=50, base_score=50.0,
-                      components={}, llm_adjustment=0, reasons=[], feedback={},
-                      profile_fingerprint="a", posting_fingerprint="b", model="none", explained=False))
+
+    db.add(
+        MatchScore(
+            posting_id=posting.id,
+            profile_id=profile.user_id,
+            score=50,
+            base_score=50.0,
+            components={},
+            llm_adjustment=0,
+            reasons=[],
+            feedback={},
+            profile_fingerprint="a",
+            posting_fingerprint="b",
+            model="none",
+            explained=False,
+        )
+    )
     db.commit()
-    db.delete(posting); db.commit()
+    db.delete(posting)
+    db.commit()
     assert db.query(MatchScore).count() == 0
 
 
 def test_score_bounds_check(db, posting, profile):
     from sqlalchemy.exc import IntegrityError
     from firstdev.models import MatchScore
-    db.add(MatchScore(posting_id=posting.id, profile_id=profile.user_id, score=101, base_score=0,
-                      components={}, llm_adjustment=0, reasons=[], feedback={},
-                      profile_fingerprint="a", posting_fingerprint="b", model="none", explained=False))
+
+    db.add(
+        MatchScore(
+            posting_id=posting.id,
+            profile_id=profile.user_id,
+            score=101,
+            base_score=0,
+            components={},
+            llm_adjustment=0,
+            reasons=[],
+            feedback={},
+            profile_fingerprint="a",
+            posting_fingerprint="b",
+            model="none",
+            explained=False,
+        )
+    )
     with pytest.raises(IntegrityError):
         db.commit()
 ```
@@ -306,28 +345,76 @@ import unicodedata
 from collections.abc import Iterable
 
 ALIASES: dict[str, str] = {
-    "js": "javascript", "ecmascript": "javascript", "ts": "typescript",
-    "py": "python", "python3": "python", "golang": "go",
-    "postgres": "postgresql", "psql": "postgresql", "pg": "postgresql",
-    "mongo": "mongodb", "k8s": "kubernetes", "node": "node.js", "nodejs": "node.js",
-    "react.js": "react", "reactjs": "react", "vue.js": "vue", "vuejs": "vue",
-    "next": "next.js", "nextjs": "next.js", "dotnet": ".net", "csharp": "c#",
-    "cpp": "c++", "aws cloud": "aws", "amazon web services": "aws", "gcp": "google cloud",
-    "ci/cd": "ci", "github actions": "ci", "sklearn": "scikit-learn", "tf": "terraform",
+    "js": "javascript",
+    "ecmascript": "javascript",
+    "ts": "typescript",
+    "py": "python",
+    "python3": "python",
+    "golang": "go",
+    "postgres": "postgresql",
+    "psql": "postgresql",
+    "pg": "postgresql",
+    "mongo": "mongodb",
+    "k8s": "kubernetes",
+    "node": "node.js",
+    "nodejs": "node.js",
+    "react.js": "react",
+    "reactjs": "react",
+    "vue.js": "vue",
+    "vuejs": "vue",
+    "next": "next.js",
+    "nextjs": "next.js",
+    "dotnet": ".net",
+    "csharp": "c#",
+    "cpp": "c++",
+    "aws cloud": "aws",
+    "amazon web services": "aws",
+    "gcp": "google cloud",
+    "ci/cd": "ci",
+    "github actions": "ci",
+    "sklearn": "scikit-learn",
+    "tf": "terraform",
 }
 
 # Package names (casefolded) that prove a skill when found in a repo's manifests.
 DEPENDENCY_SKILLS: dict[str, str] = {
-    "fastapi": "fastapi", "django": "django", "flask": "flask", "sqlalchemy": "sqlalchemy",
-    "psycopg": "postgresql", "psycopg2": "postgresql", "psycopg2-binary": "postgresql",
-    "asyncpg": "postgresql", "pg": "postgresql", "pymongo": "mongodb", "mongoose": "mongodb",
-    "redis": "redis", "celery": "celery", "pytest": "pytest", "pandas": "pandas",
-    "numpy": "numpy", "scikit-learn": "scikit-learn", "torch": "pytorch",
-    "tensorflow": "tensorflow", "react": "react", "react-dom": "react", "next": "next.js",
-    "vue": "vue", "@angular/core": "angular", "express": "express", "jest": "jest",
-    "typescript": "typescript", "tailwindcss": "tailwind", "prisma": "prisma",
-    "graphql": "graphql", "docker": "docker", "boto3": "aws", "gin-gonic/gin": "gin",
-    "tokio": "tokio", "serde": "serde", "pydantic": "pydantic", "anthropic": "llm apis",
+    "fastapi": "fastapi",
+    "django": "django",
+    "flask": "flask",
+    "sqlalchemy": "sqlalchemy",
+    "psycopg": "postgresql",
+    "psycopg2": "postgresql",
+    "psycopg2-binary": "postgresql",
+    "asyncpg": "postgresql",
+    "pg": "postgresql",
+    "pymongo": "mongodb",
+    "mongoose": "mongodb",
+    "redis": "redis",
+    "celery": "celery",
+    "pytest": "pytest",
+    "pandas": "pandas",
+    "numpy": "numpy",
+    "scikit-learn": "scikit-learn",
+    "torch": "pytorch",
+    "tensorflow": "tensorflow",
+    "react": "react",
+    "react-dom": "react",
+    "next": "next.js",
+    "vue": "vue",
+    "@angular/core": "angular",
+    "express": "express",
+    "jest": "jest",
+    "typescript": "typescript",
+    "tailwindcss": "tailwind",
+    "prisma": "prisma",
+    "graphql": "graphql",
+    "docker": "docker",
+    "boto3": "aws",
+    "gin-gonic/gin": "gin",
+    "tokio": "tokio",
+    "serde": "serde",
+    "pydantic": "pydantic",
+    "anthropic": "llm apis",
 }
 
 _SPACES = re.compile(r"\s+")
@@ -425,7 +512,8 @@ def normalize_skills(xs: Iterable[str]) -> list[str]:
 def top_k(db, *, query, owner_kind, model, candidate_ids=None, k=50):
     col = Embedding.profile_id if owner_kind == OwnerKind.profile else Embedding.posting_id
     stmt = select(col, Embedding.vector, Embedding.dim).where(
-        Embedding.owner_kind == owner_kind, Embedding.model == model)
+        Embedding.owner_kind == owner_kind, Embedding.model == model
+    )
     if candidate_ids is not None:
         if not candidate_ids:
             return []
@@ -481,8 +569,12 @@ def top_k(db, *, query, owner_kind, model, candidate_ids=None, k=50):
 ```python
 # matching/score.py
 CREDIT = {"repo": 1.0, "cv": 0.6}
-TIER_FIT = {("junior", "junior"): 1.0, ("mid", "mid"): 1.0,
-            ("junior", "mid"): 0.5, ("mid", "junior"): 0.75}  # (candidate, posting)
+TIER_FIT = {
+    ("junior", "junior"): 1.0,
+    ("mid", "mid"): 1.0,
+    ("junior", "mid"): 0.5,
+    ("mid", "junior"): 0.75,
+}  # (candidate, posting)
 
 
 def base_score(skills, tier, posting, equivalences=None):
@@ -501,8 +593,13 @@ def base_score(skills, tier, posting, equivalences=None):
     opt_cov, opt_detail = coverage(posting.optional_skills, 0.0)
     fit = TIER_FIT.get((tier, posting.tier), 1.0 if posting.tier is None else 0.5)
     base = 70 * req_cov + 15 * opt_cov + 15 * fit
-    return base, {"required_cov": req_cov, "optional_cov": opt_cov, "tier_fit": fit,
-                  "required": req_detail, "optional": opt_detail}
+    return base, {
+        "required_cov": req_cov,
+        "optional_cov": opt_cov,
+        "tier_fit": fit,
+        "required": req_detail,
+        "optional": opt_detail,
+    }
 
 
 def apply_review(base: float, adjustment: int) -> int:

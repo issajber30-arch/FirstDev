@@ -85,3 +85,37 @@ def _no_retry_backoff(request, monkeypatch):
         from firstdev import jobs
 
         monkeypatch.setattr(jobs, "retry_delay", lambda exc, attempts: 0)
+
+
+@pytest.fixture
+def user_factory(db):
+    from firstdev.models import DeveloperProfile, Role, User
+
+    def _make(email="u@example.com", role=Role.developer):
+        u = User(email=email, password_hash="h", role=role)
+        db.add(u)
+        db.flush()
+        if role == Role.developer:
+            db.add(DeveloperProfile(user_id=u.id))
+        db.commit()
+        return u
+
+    return _make
+
+
+@pytest.fixture
+def profile(db, user_factory):
+    from firstdev.models import DeveloperProfile
+
+    return db.get(DeveloperProfile, user_factory("dev@example.com").id)
+
+
+@pytest.fixture
+def posting(db, user_factory):
+    from firstdev.models import JobPosting, PostingStatus, Role
+
+    rec = user_factory("rec@example.com", Role.recruiter)
+    p = JobPosting(recruiter_id=rec.id, title="t", description="d", status=PostingStatus.open)
+    db.add(p)
+    db.commit()
+    return p

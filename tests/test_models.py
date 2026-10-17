@@ -216,3 +216,121 @@ def test_naive_datetime_rejected(db):
     )
     with pytest.raises(StatementError):
         db.commit()
+
+
+def _score(posting, profile, **kw):
+    from firstdev.models import MatchScore
+
+    fields = dict(
+        posting_id=posting.id,
+        profile_id=profile.user_id,
+        score=50,
+        base_score=50.0,
+        components={},
+        llm_adjustment=0,
+        reasons=[],
+        feedback={},
+        profile_fingerprint="a",
+        posting_fingerprint="b",
+        model="none",
+        explained=False,
+    )
+    return MatchScore(**{**fields, **kw})
+
+
+def test_embedding_requires_exactly_one_owner(db):
+    from firstdev.models import Embedding, OwnerKind
+
+    db.add(
+        Embedding(
+            owner_kind=OwnerKind.profile,
+            profile_id=None,
+            posting_id=None,
+            model="m",
+            dim=3,
+            vector=b"\x00" * 12,
+            source_fingerprint="f",
+        )
+    )
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
+def test_embedding_owner_kind_must_match_column(db, posting):
+    from firstdev.models import Embedding, OwnerKind
+
+    db.add(
+        Embedding(
+            owner_kind=OwnerKind.profile,
+            posting_id=posting.id,
+            model="m",
+            dim=3,
+            vector=b"\x00" * 12,
+            source_fingerprint="f",
+        )
+    )
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
+def test_match_score_unique_and_cascades_on_posting_delete(db, posting, profile):
+    from firstdev.models import MatchScore
+
+    db.add(_score(posting, profile))
+    db.commit()
+    db.add(_score(posting, profile))
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
+    db.delete(posting)
+    db.commit()
+    assert db.query(MatchScore).count() == 0
+
+
+@pytest.mark.parametrize("kw", [{"score": 101}, {"score": -1}, {"llm_adjustment": 11}])
+def test_score_bounds_check(db, posting, profile, kw):
+    db.add(_score(posting, profile, **kw))
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
+def test_invitation_unique_and_open_default(db, posting, profile):
+    from firstdev.models import Invitation, InvitationStatus
+
+    kw = dict(posting_id=posting.id, profile_id=profile.user_id, recruiter_id=posting.recruiter_id)
+    db.add(Invitation(**kw))
+    db.commit()
+    assert db.query(Invitation).one().status == InvitationStatus.sent
+    db.add(Invitation(**kw))
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
+def test_new_tables_cascade_on_user_delete(db, posting, profile):
+    from firstdev.models import Embedding, OwnerKind, SkillProfile
+
+    db.add(SkillProfile(profile_id=profile.user_id, skills=[], tier="junior", fingerprint="f"))
+    db.add(
+        Embedding(
+            owner_kind=OwnerKind.profile,
+            profile_id=profile.user_id,
+            model="m",
+            dim=3,
+            vector=b"\x00" * 12,
+            source_fingerprint="f",
+        )
+    )
+    db.add(_score(posting, profile))
+    db.commit()
+    db.delete(db.get(User, profile.user_id))
+    db.commit()
+    for m in (SkillProfile, Embedding):
+        assert db.query(m).count() == 0
+    from firstdev.models import MatchScore
+
+    assert db.query(MatchScore).count() == 0
+
+
+def test_profile_and_posting_defaults(db, posting, profile):
+    assert profile.open_to_opportunities is False
+    assert posting.injection_flags == []

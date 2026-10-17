@@ -13,10 +13,12 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     MetaData,
     String,
     Text,
     UniqueConstraint,
+    false,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import TypeDecorator
@@ -80,9 +82,24 @@ class ApplicationStatus(enum.StrEnum):
     withdrawn = "withdrawn"
 
 
+class InvitationStatus(enum.StrEnum):
+    sent = "sent"
+    accepted = "accepted"
+    declined = "declined"
+
+
+class OwnerKind(enum.StrEnum):
+    profile = "profile"
+    posting = "posting"
+
+
 class JobKind(enum.StrEnum):
     cv_parse = "cv_parse"
     repo_analyze = "repo_analyze"
+    embed_profile = "embed_profile"
+    embed_posting = "embed_posting"
+    score_pair = "score_pair"
+    rank_posting = "rank_posting"
 
 
 class JobStatus(enum.StrEnum):
@@ -155,6 +172,10 @@ class DeveloperProfile(Base):
     location: Mapped[str | None] = mapped_column(String(100))
     experience_tier: Mapped[Tier | None] = mapped_column(_enum(Tier, "tier"))
     github_username: Mapped[str | None] = mapped_column(String(39))
+    # Opt-in gate for recruiter discovery (ranking, invitations).
+    open_to_opportunities: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=false()
+    )
     created_at: Mapped[datetime] = _created()
 
 
@@ -266,6 +287,7 @@ class JobPosting(Base):
     currency: Mapped[str | None] = mapped_column(String(3))
     location: Mapped[str | None] = mapped_column(String(100))
     remote: Mapped[bool] = mapped_column(Boolean, default=False)
+    injection_flags: Mapped[list] = mapped_column(JSON, default=list)
     status: Mapped[PostingStatus] = mapped_column(
         _enum(PostingStatus, "posting_status"), default=PostingStatus.draft
     )
@@ -281,6 +303,9 @@ class Application(Base):
     profile_id: Mapped[str] = _fk("developer_profiles.user_id")
     status: Mapped[ApplicationStatus] = mapped_column(
         _enum(ApplicationStatus, "application_status"), default=ApplicationStatus.submitted
+    )
+    match_score_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("match_scores.id", ondelete="SET NULL")
     )
     created_at: Mapped[datetime] = _created()
 
@@ -314,4 +339,82 @@ class Job(Base):
     last_error: Mapped[str | None] = mapped_column(Text)
     locked_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     run_after: Mapped[datetime | None] = mapped_column(UTCDateTime())  # retry backoff
+    created_at: Mapped[datetime] = _created()
+
+
+class SkillProfile(Base):
+    __tablename__ = "skill_profiles"
+
+    profile_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("developer_profiles.user_id", ondelete="CASCADE"), primary_key=True
+    )
+    skills: Mapped[list] = mapped_column(JSON)  # [{skill, level: repo|cv, years, sources}]
+    tier: Mapped[Tier] = mapped_column(_enum(Tier, "tier"))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=_now, onupdate=_now)
+
+
+class Embedding(Base):
+    __tablename__ = "embeddings"
+    __table_args__ = (
+        CheckConstraint(
+            "(profile_id IS NULL) != (posting_id IS NULL) AND "
+            "((owner_kind = 'profile' AND profile_id IS NOT NULL) OR "
+            "(owner_kind = 'posting' AND posting_id IS NOT NULL))",
+            name="one_owner",
+        ),
+        UniqueConstraint("owner_kind", "profile_id", "posting_id", "model"),
+    )
+
+    id: Mapped[str] = _pk()
+    owner_kind: Mapped[OwnerKind] = mapped_column(_enum(OwnerKind, "owner_kind"))
+    profile_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("developer_profiles.user_id", ondelete="CASCADE"), index=True
+    )
+    posting_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("job_postings.id", ondelete="CASCADE"), index=True
+    )
+    model: Mapped[str] = mapped_column(String(100))
+    dim: Mapped[int] = mapped_column(Integer)
+    vector: Mapped[bytes] = mapped_column(LargeBinary)
+    source_fingerprint: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = _created()
+
+
+class MatchScore(Base):
+    __tablename__ = "match_scores"
+    __table_args__ = (
+        UniqueConstraint("posting_id", "profile_id"),
+        CheckConstraint("score BETWEEN 0 AND 100", name="score_range"),
+        CheckConstraint("llm_adjustment BETWEEN -10 AND 10", name="adjustment_range"),
+        Index("ix_match_scores_posting_id_score", "posting_id", "score"),
+    )
+
+    id: Mapped[str] = _pk()
+    posting_id: Mapped[str] = _fk("job_postings.id")
+    profile_id: Mapped[str] = _fk("developer_profiles.user_id")
+    score: Mapped[int] = mapped_column(Integer)
+    base_score: Mapped[float] = mapped_column(Float)
+    components: Mapped[dict] = mapped_column(JSON)
+    llm_adjustment: Mapped[int] = mapped_column(Integer, default=0)
+    reasons: Mapped[list] = mapped_column(JSON, default=list)
+    feedback: Mapped[dict] = mapped_column(JSON, default=dict)
+    profile_fingerprint: Mapped[str] = mapped_column(String(64))
+    posting_fingerprint: Mapped[str] = mapped_column(String(64))
+    model: Mapped[str] = mapped_column(String(100))
+    explained: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = _created()
+
+
+class Invitation(Base):
+    __tablename__ = "invitations"
+    __table_args__ = (UniqueConstraint("posting_id", "profile_id"),)
+
+    id: Mapped[str] = _pk()
+    posting_id: Mapped[str] = _fk("job_postings.id")
+    profile_id: Mapped[str] = _fk("developer_profiles.user_id")
+    recruiter_id: Mapped[str] = _fk("users.id")
+    status: Mapped[InvitationStatus] = mapped_column(
+        _enum(InvitationStatus, "invitation_status"), default=InvitationStatus.sent
+    )
     created_at: Mapped[datetime] = _created()

@@ -32,6 +32,7 @@ class ProfileIn(BaseModel):
     location: str | None = Field(None, min_length=1, max_length=100)
     experience_tier: Tier | None = None
     github_username: Annotated[str, AfterValidator(_github_username)] | None = None
+    open_to_opportunities: bool = False
 
 
 class ProfileOut(BaseModel):
@@ -42,6 +43,7 @@ class ProfileOut(BaseModel):
     location: str | None
     experience_tier: Tier | None
     github_username: str | None
+    open_to_opportunities: bool
 
 
 def current_profile(
