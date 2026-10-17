@@ -149,3 +149,188 @@ def test_delete_me_removes_embeddings(client, dev_headers, db, factory):
     r = client.request("DELETE", "/me", headers=dev_headers, json={"password": PASSWORD})
     assert r.status_code == 204
     assert embeds(db) == []
+
+
+# --- score_pair ----------------------------------------------------------------------------------
+import logging  # noqa: E402
+
+from firstdev.llm import LLMRefused, LLMTransientError  # noqa: E402
+from firstdev.matching.explain import Equivalence, Feedback, MatchReview  # noqa: E402
+from firstdev.matching.profile import build_skill_profile  # noqa: E402
+from firstdev.models import Application, MatchScore  # noqa: E402
+from firstdev.pipelines.match_jobs import is_stale  # noqa: E402
+
+
+def review(adj=0, reason=""):
+    return MatchReview(
+        equivalences=[], adjustment=adj, adjustment_reason=reason, reasons=["fits"],
+        feedback=Feedback(strengths=["py"], missing_skills=[], suggestions=[]),
+    )  # fmt: skip
+
+
+@pytest.fixture
+def scored_setup(db, profile, posting):
+    posting.required_skills = ["python"]
+    posting.optional_skills = ["docker"]
+    posting.description = "SECRET-POSTING-TEXT"
+    add_cv(db, profile, ["Python"])
+    app = Application(job_posting_id=posting.id, profile_id=profile.user_id)
+    db.add(app)
+    db.commit()
+    return posting, profile, app
+
+
+def enqueue_score(db, profile, posting, app=None, explain=True):
+    payload = {"posting_id": posting.id, "profile_id": profile.user_id, "explain": explain}
+    if app is not None:
+        payload["application_id"] = app.id
+    return enqueue(db, db.get(User, profile.user_id), JobKind.score_pair, payload)
+
+
+def test_score_pair_apply_flow_and_cache(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    llm = FakeLLM([review(5, "evidence")])
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, llm)
+    db.expire_all()
+    ms = db.scalars(select(MatchScore)).one()
+    assert ms.explained and ms.llm_adjustment == 5 and ms.model == "fake-model"
+    assert ms.score == round(ms.base_score + 5) and ms.reasons == ["fits"]
+    assert db.get(Application, app.id).match_score_id == ms.id
+    # Second run, nothing changed: the LLM queue is empty, so any call would raise.
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, llm)
+    assert len(llm.calls) == 1
+    assert {j.status for j in db.scalars(select(Job))} == {JobStatus.done}
+
+
+def test_posting_edit_makes_score_stale_and_rescored(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    llm = FakeLLM([review(), review(3, "new evidence")])
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, llm)
+    db.expire_all()
+    ms = db.scalars(select(MatchScore)).one()
+    old_fp = ms.posting_fingerprint
+    assert not is_stale(ms, posting, build_skill_profile(db, profile))
+    posting.required_skills = ["python", "go"]
+    db.commit()
+    assert is_stale(ms, posting, build_skill_profile(db, profile))
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, llm)
+    db.expire_all()
+    ms = db.scalars(select(MatchScore)).one()
+    assert len(llm.calls) == 2 and ms.posting_fingerprint != old_fp and ms.llm_adjustment == 3
+    assert not is_stale(ms, posting, build_skill_profile(db, profile))
+
+
+def test_profile_change_makes_score_stale(db, factory, scored_setup):
+    posting, profile, _ = scored_setup
+    enqueue_score(db, profile, posting, explain=False)
+    assert run_once(factory, HANDLERS, FakeLLM([]))
+    ms = db.scalars(select(MatchScore)).one()
+    assert not ms.explained and ms.model == "formula" and ms.llm_adjustment == 0
+    add_cv(db, profile, ["Python", "Docker"])
+    assert is_stale(ms, posting, build_skill_profile(db, profile))
+
+
+def test_explain_upgrades_unexplained_score(db, factory, scored_setup):
+    posting, profile, _ = scored_setup
+    enqueue_score(db, profile, posting, explain=False)
+    assert run_once(factory, HANDLERS, FakeLLM([]))
+    llm = FakeLLM([review()])
+    enqueue_score(db, profile, posting, explain=True)
+    assert run_once(factory, HANDLERS, llm) and len(llm.calls) == 1
+    db.expire_all()
+    assert db.scalars(select(MatchScore)).one().explained
+
+
+def test_scored_without_embedding(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    assert embeds(db) == []
+    enqueue_score(db, profile, posting, app, explain=False)
+    assert run_once(factory, HANDLERS, FakeLLM([]))
+    db.expire_all()
+    assert db.scalars(select(MatchScore)).one().score > 0
+    assert db.scalars(select(Job)).one().status == JobStatus.done
+
+
+def test_equivalence_recomputes_base_and_components(db, factory, scored_setup):
+    posting, profile, _ = scored_setup
+    posting.required_skills = ["python", "postgresql"]
+    db.commit()
+    add_cv(db, profile, ["Python", "Postgres SQL"])
+    r = review(2, "x")
+    r.equivalences = [Equivalence(posting_skill="postgresql", candidate_skill="postgres sql")]
+    enqueue_score(db, profile, posting)
+    assert run_once(factory, HANDLERS, FakeLLM([r]))
+    db.expire_all()
+    ms = db.scalars(select(MatchScore)).one()
+    assert ms.components["required_cov"] == 0.6  # both cv-level: (0.6 + 0.6) / 2
+
+
+def test_missing_posting_profile_or_application_no_crash(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    user = db.get(User, profile.user_id)
+    enqueue(db, user, JobKind.score_pair, {"posting_id": "gone", "profile_id": profile.user_id})
+    enqueue(db, user, JobKind.score_pair, {"posting_id": posting.id, "profile_id": "gone"})
+    enqueue(db, user, JobKind.score_pair, {})
+    ghost_app = {"posting_id": posting.id, "profile_id": profile.user_id, "application_id": "gone"}
+    enqueue(db, user, JobKind.score_pair, ghost_app)
+    for _ in range(4):
+        assert run_once(factory, HANDLERS, FakeLLM([]))
+    assert {j.status for j in db.scalars(select(Job))} == {JobStatus.done}
+    assert len(db.scalars(select(MatchScore)).all()) == 1  # only the last (explain false) scored
+
+
+def test_foreign_application_not_linked(db, factory, scored_setup, user_factory):
+    posting, profile, _ = scored_setup
+    other = user_factory("other@example.com")
+    foreign = Application(job_posting_id=posting.id, profile_id=other.id)
+    db.add(foreign)
+    db.commit()
+    enqueue_score(db, profile, posting, foreign, explain=False)
+    assert run_once(factory, HANDLERS, FakeLLM([]))
+    db.expire_all()
+    assert db.get(Application, foreign.id).match_score_id is None
+
+
+def test_transient_llm_error_requeues_without_score(db, factory, scored_setup):
+    posting, profile, _ = scored_setup
+    job = enqueue_score(db, profile, posting)
+    assert run_once(factory, HANDLERS, FakeLLM([LLMTransientError("RateLimitError")]))
+    db.expire_all()
+    assert db.get(Job, job.id).status == JobStatus.queued
+    assert db.scalars(select(MatchScore)).all() == []
+
+
+def test_refusal_fails_job_and_stores_no_score(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    job = enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, FakeLLM([LLMRefused("x")]))
+    db.expire_all()
+    assert db.get(Job, job.id).status == JobStatus.failed
+    assert db.scalars(select(MatchScore)).all() == []
+    assert db.get(Application, app.id).match_score_id is None
+
+
+def test_refusal_on_rescore_keeps_old_score(db, factory, scored_setup):
+    posting, profile, app = scored_setup
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, FakeLLM([review(4, "e")]))
+    posting.required_skills = ["go"]
+    db.commit()
+    enqueue_score(db, profile, posting, app)
+    assert run_once(factory, HANDLERS, FakeLLM([LLMRefused("x")]))
+    db.expire_all()
+    ms = db.scalars(select(MatchScore)).one()
+    assert ms.llm_adjustment == 4 and ms.components["required"][0]["skill"] == "python"
+
+
+def test_logs_have_no_posting_text(db, factory, scored_setup, caplog):
+    posting, profile, app = scored_setup
+    enqueue_score(db, profile, posting, app)
+    with caplog.at_level(logging.DEBUG):
+        assert run_once(factory, HANDLERS, FakeLLM([review()]))
+    assert "scored posting=" in caplog.text
+    assert "SECRET-POSTING-TEXT" not in caplog.text
