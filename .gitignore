@@ -44,3 +44,6 @@ web/e2e/screenshots/
 .idea/
 .vscode/
 *.swp
+
+# Submission archives
+FirstDev_Project_*.zip
